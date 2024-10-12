@@ -14,6 +14,9 @@ from datetime import datetime
 from fastapi import Body, HTTPException
 from rag import router as rag_router
 from quiz import router as quiz_router
+from rag import add_document
+from typing import Optional
+import uuid
 from quiz import *
 import uuid
 
@@ -190,8 +193,9 @@ def create_memory(new_memory: NewMemory):
             f.write(image_bytes)
 
     # Save texts
-    with open(f"{memory_dir}/texts/{new_memory.owner}", "w") as f:
-        f.write(new_memory.text)
+    with open(f"{memory_dir}/texts/{new_memory.owner}.json", "w") as f:
+        memory = {str(uuid.uuid4()): new_memory.text}
+        f.write(json.dumps(memory))
 
     # Return the created memory
     return get_memory_data(new_memory_id)
@@ -328,11 +332,29 @@ async def transcribe(audio: UploadFile = File(...)):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-def add_text_to_memory(memory_id: int, text: str, user_id: int):
+@app.post("/memories/{memory_id}/texts", response_model=dict)
+def add_text_to_memory(
+    memory_id: int, text: str, user_id: int, text_uuid: Optional[str] = None
+):
     memory_dir = f"data/memories/{memory_id}"
-    with open(f"{memory_dir}/texts/{user_id}", "w") as f:
-        f.write(text)
+    texts_dir = f"{memory_dir}/texts"
 
+    # Ensure the directory structure exists
+    os.makedirs(texts_dir, exist_ok=True)
+
+    file_path = f"{texts_dir}/{user_id}.json"
+    texts = {}
+    text_uuid = str(uuid.uuid4()) if text_uuid is None else text_uuid
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            texts = json.load(f)
+
+    texts[text_uuid] = text
+
+    with open(file_path, "w") as f:
+        json.dump(texts, f, indent=2)
+
+    add_document(text)
     return {"status": "Text added to memory"}
 
 
