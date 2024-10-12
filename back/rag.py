@@ -19,8 +19,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableBranch
 
 from langchain_core.runnables import RunnablePassthrough
+from langchain.schema import AIMessage
 
 from fastapi.middleware.cors import CORSMiddleware
+from langchain_core.runnables import RunnableLambda
+
 
 
 # Load environment variables
@@ -91,12 +94,15 @@ def parse_retriever_input(params: Dict):
     return params["messages"][-1].content
 
 
-conversational_retrieval_chain = RunnablePassthrough.assign(
-    context=query_transforming_retriever_chain,
-).assign(
-    answer=document_chain,
+conversational_retrieval_chain = (
+    RunnablePassthrough.assign(
+        context=query_transforming_retriever_chain
+    )
+    .assign(
+        answer=document_chain
+    )
+    | RunnableLambda(lambda outputs: AIMessage(content=outputs['answer']))
 )
-
 # FastAPI application setup
 app = FastAPI(
     title="LangChain Server",
