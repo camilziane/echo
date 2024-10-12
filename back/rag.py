@@ -25,7 +25,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableLambda
 
 
-
 # Load environment variables
 load_dotenv()
 
@@ -38,7 +37,11 @@ embeddings = MistralAIEmbeddings(model="mistral-embed")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
 
 # Initialize ChromaDB vectorstore
-vectorstore = Chroma(embedding_function=embeddings, collection_name="my-rag-docs", persist_directory="data/rag_vectorstore")
+vectorstore = Chroma(
+    embedding_function=embeddings,
+    collection_name="my-rag-docs",
+    persist_directory="data/rag_vectorstore",
+)
 
 retriever = vectorstore.as_retriever()
 
@@ -94,14 +97,10 @@ def parse_retriever_input(params: Dict):
     return params["messages"][-1].content
 
 
-conversational_retrieval_chain = (
-    RunnablePassthrough.assign(
-        context=query_transforming_retriever_chain
-    )
-    .assign(
-        answer=document_chain
-    )
-    | RunnableLambda(lambda outputs: AIMessage(content=outputs['answer']))
+conversational_retrieval_chain = RunnablePassthrough.assign(
+    context=query_transforming_retriever_chain
+).assign(answer=document_chain) | RunnableLambda(
+    lambda outputs: AIMessage(content=outputs["answer"])
 )
 # FastAPI application setup
 app = FastAPI(
