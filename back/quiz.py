@@ -165,6 +165,18 @@ def thompson_sampling_quiz_selection() -> Quiz:
     return selected_quiz
 
 
+@app.get("/generate-quiz", response_model=Quiz)
+async def generate_quiz(epsilon: float = 0) -> Quiz:
+    """sample a random number if it is less than epsilon, return a random question, else return the best question"""
+    quizs = load_quizs()
+    if not quizs:
+        return None
+    
+    if random.random() < epsilon:
+        return await generate_random_quiz()
+    else:
+        return thompson_sampling_quiz_selection() 
+
 
 def save_quizs():
     """save questions to a json file"""

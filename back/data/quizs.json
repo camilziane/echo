@@ -26,5 +26,61 @@
     ],
     "failure": 1,
     "success": 1
+  },
+  "dd57baca-e56d-4b31-bef5-70d2be0b6eae": {
+    "question_id": "dd57baca-e56d-4b31-bef5-70d2be0b6eae",
+    "memory_id": "1",
+    "context": "Histoire 1 : La D\u00e9couverte en Amazonie\nIl y a deux ans, je me suis lanc\u00e9 dans une exp\u00e9dition en Amazonie pour tester un drone autonome que j'avais con\u00e7u pour cartographier des for\u00eats denses. Au milieu de la jungle, mon drone a d\u00e9tect\u00e9 des ruines anciennes que personne n'avait encore d\u00e9couvertes. Ce fut un moment de pur \u00e9merveillement. En les explorant, j\u2019ai ressenti cette connexion entre la technologie et l\u2019histoire humaine, un sentiment de pont entre deux mondes.\n",
+    "question": "Quelle technologie a permis de d\u00e9couvrir les ruines anciennes en Amazonie ?",
+    "correct_answer": "Un drone autonome",
+    "bad_answer": [
+      "Un GPS",
+      "Une boussole",
+      "Un satellite"
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "ffa20826-8ffd-45a3-a96a-80cacff97a0e": {
+    "question_id": "ffa20826-8ffd-45a3-a96a-80cacff97a0e",
+    "memory_id": "1",
+    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
+    "question": "Quel \u00e9tait le principal objectif du robot construit par votre \u00e9quipe lors du hackathon ?",
+    "correct_answer": "D\u00e9tecter les signes de crises cardiaques chez les patients",
+    "bad_answer": [
+      "Pr\u00e9parer des repas pour les patients",
+      "Effectuer des chirurgies mineures",
+      "Aider les patients \u00e0 faire de l'exercice"
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "cad2f1d6-0a7d-439b-b4c8-3bcb8aa79004": {
+    "question_id": "cad2f1d6-0a7d-439b-b4c8-3bcb8aa79004",
+    "memory_id": "1",
+    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
+    "question": "Que fait le robot construit par l'\u00e9quipe lors du hackathon ?",
+    "correct_answer": "D\u00e9tecte les signes de crises cardiaques chez les patients",
+    "bad_answer": [
+      "Pr\u00e9pare des repas pour les patients",
+      "Aide \u00e0 faire le m\u00e9nage dans les h\u00f4pitaux",
+      "Joue de la musique pour divertir les patients"
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "f763691f-a9b3-45ec-a869-ceb851d612d3": {
+    "question_id": "f763691f-a9b3-45ec-a869-ceb851d612d3",
+    "memory_id": "1",
+    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
+    "question": "Quelle technologie a \u00e9t\u00e9 d\u00e9velopp\u00e9e par l'\u00e9quipe lors du hackathon de l'ann\u00e9e derni\u00e8re ?",
+    "correct_answer": "Un robot capable de d\u00e9tecter les signes de crises cardiaques",
+    "bad_answer": [
+      "Un logiciel de gestion de biblioth\u00e8que",
+      "Un drone de livraison de repas",
+      "Un syst\u00e8me de reconnaissance vocale"
+    ],
+    "failure": 1,
+    "success": 1
   }
 }
