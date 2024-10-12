@@ -1,7 +1,6 @@
 {
     "name": "California Trip",
     "location": "California",
-    "start_date": "2022-01-01",
-    "end_date": "2022-01-02",
+    "date": "2022-01-01",
     "owner": "1"
 }
