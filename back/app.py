@@ -11,10 +11,11 @@ from groq import Groq
 from dotenv import load_dotenv
 import logging
 from datetime import datetime
-from fastapi import Body
+from fastapi import Body, HTTPException
 from rag import router as rag_router
 from quiz import router as quiz_router
 from quiz import *
+import uuid
 
 # Add this at the beginning of your app.py file
 if not os.path.exists("data"):
@@ -333,73 +334,6 @@ def add_text_to_memory(memory_id: int, text: str, user_id: int):
         f.write(text)
 
     return {"status": "Text added to memory"}
-
-
-@app.post("/submit-answer")
-def submit_answer(question_id: str, success: bool):
-    # Log the question_id and success with a logger
-    logger.info(f"Question ID: {question_id}, Success: {success}")
-    quizs = load_quizs()
-    if question_id not in quizs:
-        raise HTTPException(status_code=404, detail="Question not found")
-
-    quiz = quizs[question_id]
-    if success:
-        quiz.success += 1
-    else:
-        quiz.failure += 1
-    save_quizs()
-    return {"status": "Question updated"}
-
-
-def thompson_sampling_quiz_selection(already_selected_quizes: list[uuid]) -> Quiz:
-    quizs = load_quizs()
-    if not quizs:
-        return None
-
-    max_score = float("-inf")
-    selected_quiz = None
-
-    for _, quiz in quizs.items():
-        if quiz.question_id in already_selected_quizes:
-            continue
-        sample = beta.rvs(quiz.failure, quiz.success)
-
-        if sample > max_score:
-            max_score = sample
-            selected_quiz = quiz
-
-    return selected_quiz
-
-
-@app.get("/generate-thompson-quiz", response_model=Quiz)
-def generate_thompson_quiz() -> Quiz:
-    return thompson_sampling_quiz_selection()
-
-
-@app.get("/generate-quiz", response_model=list[Quiz])
-async def generate_quiz(epsilon: float = 0, nb_quiz: int = 5):
-    quizs = load_quizs()
-    if not quizs:
-        return None
-    generated_quizs = []
-    for _ in range(nb_quiz):
-        if random.random() < epsilon:
-            generated_quizs.append(await generate_random_quiz())
-        else:
-            quiz = thompson_sampling_quiz_selection(
-                [quiz.question_id for quiz in generated_quizs]
-            )
-            if quiz:
-                generated_quizs.append(quiz)
-    return generated_quizs
-
-
-@app.post("/start-quiz")
-async def start_quiz():
-    quiz_id = str(uuid.uuid4())
-    questions = [await generate_quiz() for _ in range(5)]  # Generate 5 questions
-    return {"quiz_id": quiz_id, "questions": questions}
 
 
 @app.post("/finish-quiz")
