@@ -23,6 +23,9 @@ from langchain.schema import AIMessage
 
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableLambda
+from fastapi import APIRouter
+
+router = APIRouter()
 
 
 # Load environment variables
@@ -102,26 +105,9 @@ conversational_retrieval_chain = RunnablePassthrough.assign(
 ).assign(answer=document_chain) | RunnableLambda(
     lambda outputs: AIMessage(content=outputs["answer"])
 )
-# FastAPI application setup
-app = FastAPI(
-    title="LangChain Server",
-    version="1.0",
-    description="A simple API server using Langchain's Runnable interfaces",
-)
-
-# Set all CORS enabled origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
 
 # API endpoint to add documents to ChromaDB
-@app.post("/add_document")
+@router.post("/add_document")
 def add_document(text: str):
     """Add a new document to the RAG system."""
     doc = Document(text)
@@ -143,12 +129,7 @@ class InputChat(BaseModel):
 
 # Add routes to FastAPI for the RAG chain
 add_routes(
-    app,
+    router,
     conversational_retrieval_chain.with_types(input_type=InputChat),
     path="/rag",
 )
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="localhost", port=8001)
