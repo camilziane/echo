@@ -4,6 +4,7 @@ import { RadioGroup } from '@headlessui/react';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import * as uuid from 'uuid';
 
 // Shuffle function
 const shuffleArray = (array) => {
@@ -36,14 +37,15 @@ const QuizSlideshow = () => {
     const fetchQuestions = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/start-quiz', {
-                method: 'POST',
+            const response = await fetch('http://localhost:8000/generate-quiz', {
+                method: 'GET',
             });
             if (!response.ok) {
                 throw new Error('Failed to start quiz');
             }
-            const { quiz_id, questions } = await response.json();
-            setQuizId(quiz_id);
+            const questions = await response.json();
+            const quizId = uuid.v4(); // Generate a unique ID for this quiz session
+            setQuizId(quizId);
             const fetchedQuestions = questions.map(q => ({
                 id: q.question_id,
                 question: q.question,
