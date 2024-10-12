@@ -207,7 +207,7 @@ def get_memories():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Assurez-vous que c'est l'URL de votre frontend
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],  # Assurez-vous que c'est l'URL de votre frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
