@@ -84,35 +84,52 @@ const Chatbot = () => {
         }
     };
 
-    const sendAudioToServer = (audioBlob) => {
+    const sendAudioToServer = async (audioBlob) => {
         console.log("Envoi de l'audio au serveur...");
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.mp3");
 
-        fetch("http://localhost:8000/transcribe", {
-            method: "POST",
-            body: formData,
-        })
-            .then((response) => {
-                console.log("Réponse brute du serveur:", response);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("Données de transcription reçues:", data);
-                if (data.error) {
-                    setStatus(`Erreur : ${data.error}`);
-                } else {
-                    setInput(data.transcription);
-                    setStatus("");
-                }
-            })
-            .catch((error) => {
-                console.error("Erreur lors de la transcription:", error);
-                setStatus(`Erreur : ${error.message}`);
+        try {
+            console.log("Début de la requête de transcription...");
+            const controller = new AbortController();
+            const timeout = setTimeout(() => {
+                controller.abort();
+                console.log("Temps écoulé, arrêt de la requête.");
+                setStatus("Erreur : temps écoulé lors de la transcription.");
+            }, 10000); // Arrête la requête après 10 secondes
+
+            const response = await fetch("http://localhost:8000/transcribe", {
+                method: "POST",
+                body: formData,
+                signal: controller.signal,
             });
+
+            clearTimeout(timeout); // Annule le timeout si la réponse arrive avant
+            console.log(`Réponse reçue du serveur. Statut: ${response.status}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Données de transcription reçues:", data);
+
+            if (data.error) {
+                setStatus(`Erreur : ${data.error}`);
+            } else {
+                setInput(data.transcription);
+                setStatus("");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la transcription:", error);
+            if (error.name === 'AbortError') {
+                setStatus("Erreur : la requête a été annulée en raison d'un délai d'attente.");
+            } else {
+                setStatus(`Erreur : ${error.message}`);
+            }
+        }
     };
 
     return (
