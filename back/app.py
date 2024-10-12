@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 import base64
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +7,8 @@ import json
 from fastapi.responses import JSONResponse
 from typing import List
 import os
+from groq import Groq
+from dotenv import load_dotenv
 
 
 # Initialisation de l'application FastAPI
@@ -202,3 +204,52 @@ def get_memories():
             print(f"Error processing memory {memory_id}: {str(e)}")
     
     return sorted(memories, key=lambda x: x.date, reverse=True)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Assurez-vous que c'est l'URL de votre frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+load_dotenv()
+
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+@app.post("/transcribe")
+async def transcribe(audio: UploadFile = File(...)):
+    print("Requête de transcription reçue")
+    if not audio:
+        print("Aucun fichier audio trouvé")
+        return JSONResponse(status_code=400, content={"error": "Aucun fichier audio trouvé"})
+    
+    # Vérifier le type MIME
+    if audio.content_type not in ["audio/mp3", "audio/mpeg"]:
+        print(f"Type de fichier non pris en charge: {audio.content_type}")
+        return JSONResponse(status_code=400, content={"error": "Type de fichier audio non pris en charge."})
+    
+    try:
+        # Sauvegarder le fichier temporairement
+        temp_path = f"/tmp/{audio.filename}"
+        with open(temp_path, "wb") as buffer:
+            content = await audio.read()
+            buffer.write(content)
+        
+        print(f"Fichier audio sauvegardé : {temp_path}")
+        
+        # Ouvrir le fichier en mode binaire et transcrire
+        with open(temp_path, "rb") as f:
+            transcription = client.audio.transcriptions.create(
+                file=f,
+                model="whisper-large-v3-turbo"
+            )
+        
+        print("Transcription réussie")
+        
+        # Supprimer le fichier temporaire
+        os.remove(temp_path)
+        
+        return JSONResponse(content={"transcription": transcription.text})
+    except Exception as e:
+        print(f"Erreur lors de la transcription : {str(e)}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
