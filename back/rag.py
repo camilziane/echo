@@ -20,6 +20,9 @@ from langchain_core.runnables import RunnableBranch
 
 from langchain_core.runnables import RunnablePassthrough
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 # Load environment variables
 load_dotenv()
 
@@ -101,6 +104,16 @@ app = FastAPI(
     description="A simple API server using Langchain's Runnable interfaces",
 )
 
+# Set all CORS enabled origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
 
 # API endpoint to add documents to ChromaDB
 @app.post("/add_document")
@@ -133,4 +146,4 @@ add_routes(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=8001)
