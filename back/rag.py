@@ -24,12 +24,23 @@ from langchain.schema import AIMessage
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableLambda
 from fastapi import APIRouter
+import json
 
 router = APIRouter()
 
 
 # Load environment variables
 load_dotenv()
+
+
+class InputChat(BaseModel):
+    """Input for the chat endpoint."""
+
+    messages: List[Union[HumanMessage, AIMessage, SystemMessage]] = Field(
+        ...,
+        description="The chat messages representing the current conversation.",
+    )
+
 
 # Set up the Mistral API credentials
 if not os.getenv("MISTRAL_API_KEY"):
@@ -39,14 +50,51 @@ if not os.getenv("MISTRAL_API_KEY"):
 embeddings = MistralAIEmbeddings(model="mistral-embed")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
 
-# Initialize ChromaDB vectorstore
-vectorstore = Chroma(
-    embedding_function=embeddings,
-    collection_name="my-rag-docs",
-    persist_directory="data/rag_vectorstore",
-)
+vdb = {
+    "vectorstore": Chroma(
+        embedding_function=embeddings,
+        collection_name="my-rag-docs",
+        persist_directory="data/rag_vectorstore",
+    ),
+}
 
-retriever = vectorstore.as_retriever()
+vdb["retriever"] = vdb["vectorstore"].as_retriever()
+
+
+def reset_vectorstore():
+    """Reset the vector store by deleting all documents."""
+    vdb["vectorstore"].delete_collection()
+    vdb["vectorstore"] = Chroma(
+        embedding_function=embeddings,
+        collection_name="my-rag-docs",
+        persist_directory="data/rag_vectorstore",
+    )
+    vdb["retriever"] = vdb["vectorstore"].as_retriever()
+    return {"status": "Vector store reset successfully"}
+
+
+def init_vectorstore_from_memories():
+    """Initialize the vector store with all texts from data/memories."""
+    memories_dir = "data/memories"
+    documents = []
+
+    for memory_folder in os.listdir(memories_dir):
+        memory_path = os.path.join(memories_dir, memory_folder)
+        if os.path.isdir(memory_path):
+            texts_folder = os.path.join(memory_path, "texts")
+            if os.path.exists(texts_folder):
+                for filename in os.listdir(texts_folder):
+                    file_path = os.path.join(texts_folder, filename)
+                    if os.path.isfile(file_path) and file_path.endswith(".json"):
+                        with open(file_path, "r") as file:
+                            texts = json.load(file)
+                            for id, text in texts.items():
+                                doc = Document(text)
+                                documents.append(doc)
+    vdb["vectorstore"].add_documents(documents)
+    vdb["retriever"] = vdb["vectorstore"].as_retriever()
+    return {"status": f"Vector store initialized with {len(documents)} documents"}
+
 
 # Set up the LLM
 llm = ChatMistralAI(model="mistral-small-latest")
@@ -89,10 +137,10 @@ query_transforming_retriever_chain = RunnableBranch(
     (
         lambda x: len(x.get("messages", [])) == 1,
         # If only one message, then we just pass that message's content to retriever
-        (lambda x: x["messages"][-1].content) | retriever,
+        (lambda x: x["messages"][-1].content) | vdb["retriever"],
     ),
     # If messages, then we pass inputs to LLM chain to transform the query, then pass to retriever
-    query_transform_prompt | llm | StrOutputParser() | retriever,
+    query_transform_prompt | llm | StrOutputParser() | vdb["retriever"],
 ).with_config(run_name="chat_retriever_chain")
 
 
@@ -106,25 +154,28 @@ conversational_retrieval_chain = RunnablePassthrough.assign(
     lambda outputs: AIMessage(content=outputs["answer"])
 )
 
+
+# Add these routes to the router
+@router.post("/reset_vectorstore")
+def api_reset_vectorstore():
+    return reset_vectorstore()
+
+
+@router.post("/init_vectorstore")
+def api_init_vectorstore():
+    return init_vectorstore_from_memories()
+
+
 # API endpoint to add documents to ChromaDB
 @router.post("/add_document")
 def add_document(text: str):
     """Add a new document to the RAG system."""
     doc = Document(text)
-    vectorstore.add_documents([doc])
+    vdb["vectorstore"].add_documents([doc])
     return {"status": "Document added successfully"}
 
 
 # Replace 'some_module' with the actual module name
-
-
-class InputChat(BaseModel):
-    """Input for the chat endpoint."""
-
-    messages: List[Union[HumanMessage, AIMessage, SystemMessage]] = Field(
-        ...,
-        description="The chat messages representing the current conversation.",
-    )
 
 
 # Add routes to FastAPI for the RAG chain
