@@ -8,7 +8,12 @@ const ProfileSelection = () => {
   useEffect(() => {
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
-      .then(data => setProfiles(data));
+      .then(data => {
+        setProfiles(data);
+        // Store profiles in localStorage
+        localStorage.setItem('profiles', JSON.stringify(data));
+      })
+      .catch(error => console.error('Error fetching profiles:', error));
   }, []);
 
   const handleProfileClick = (profile) => {
@@ -32,7 +37,7 @@ const ProfileSelection = () => {
           >
             <div className="w-32 h-32 rounded-md overflow-hidden border-4 border-transparent group-hover:border-blue-500 transition-all duration-200">
               <img
-                src={`${process.env.PUBLIC_URL}/logo.png`}
+                src={profile.image ? `data:image/jpeg;base64,${profile.image}` : `${process.env.PUBLIC_URL}/logo.png`}
                 alt={profile.name}
                 className="w-full h-full object-cover"
               />

@@ -10,6 +10,15 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 import logging
+from datetime import datetime
+from fastapi import Body
+from rag import router as rag_router
+from quiz import router as quiz_router
+from quiz import *
+
+# Add this at the beginning of your app.py file
+if not os.path.exists("data"):
+    os.makedirs("data")
 
 # Initialisation de l'application FastAPI
 app = FastAPI()
@@ -21,6 +30,10 @@ app.add_middleware(
     allow_methods=["*"],  # Autoriser toutes les méthodes (GET, POST, etc.)
     allow_headers=["*"],  # Autoriser tous les headers
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # Modèle Pydantic pour représenter un profil
@@ -91,7 +104,6 @@ def get_memory_data(memory_id) -> Memory:
     texts_paths = glob(f"data/memories/{memory_id}/texts/*")
     image_paths = glob(f"data/memories/{memory_id}/images/*")
 
-    print("OK")
     # Read and encode images
     encoded_images = []
     for image_path in image_paths:
@@ -148,6 +160,7 @@ def get_memories_data() -> List[Memory]:
         memories.append(get_memory_data(memory))
     return memories
 
+
 @app.post("/memories", response_model=Memory)
 def create_memory(new_memory: NewMemory):
     # Get the next available memory ID
@@ -191,6 +204,7 @@ def get_memory(memory_id: int):
     except FileNotFoundError:
         return JSONResponse(status_code=404, content={"message": "Memory not found"})
 
+
 @app.get("/memories", response_model=List[Memory])
 def get_memories():
     memory_paths = glob("data/memories/*")
@@ -202,7 +216,7 @@ def get_memories():
             memories.append(memory)
         except Exception as e:
             print(f"Error processing memory {memory_id}: {str(e)}")
-    
+
     return sorted(memories, key=lambda x: x.date, reverse=True)
 
 # Charger les variables d'environnement
@@ -311,3 +325,135 @@ async def transcribe(audio: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Erreur lors de la transcription : {str(e)}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+def add_text_to_memory(memory_id: int, text: str, user_id: int):
+    memory_dir = f"data/memories/{memory_id}"
+    with open(f"{memory_dir}/texts/{user_id}", "w") as f:
+        f.write(text)
+
+    return {"status": "Text added to memory"}
+
+
+@app.post("/submit-answer")
+def submit_answer(question_id: str, success: bool):
+    # Log the question_id and success with a logger
+    logger.info(f"Question ID: {question_id}, Success: {success}")
+    quizs = load_quizs()
+    if question_id not in quizs:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    quiz = quizs[question_id]
+    if success:
+        quiz.success += 1
+    else:
+        quiz.failure += 1
+    save_quizs()
+    return {"status": "Question updated"}
+
+
+def thompson_sampling_quiz_selection(already_selected_quizes: list[uuid]) -> Quiz:
+    quizs = load_quizs()
+    if not quizs:
+        return None
+
+    max_score = float("-inf")
+    selected_quiz = None
+
+    for _, quiz in quizs.items():
+        if quiz.question_id in already_selected_quizes:
+            continue
+        sample = beta.rvs(quiz.failure, quiz.success)
+
+        if sample > max_score:
+            max_score = sample
+            selected_quiz = quiz
+
+    return selected_quiz
+
+
+@app.get("/generate-thompson-quiz", response_model=Quiz)
+def generate_thompson_quiz() -> Quiz:
+    return thompson_sampling_quiz_selection()
+
+
+@app.get("/generate-quiz", response_model=list[Quiz])
+async def generate_quiz(epsilon: float = 0, nb_quiz: int = 5):
+    quizs = load_quizs()
+    if not quizs:
+        return None
+    generated_quizs = []
+    for _ in range(nb_quiz):
+        if random.random() < epsilon:
+            generated_quizs.append(await generate_random_quiz())
+        else:
+            quiz = thompson_sampling_quiz_selection(
+                [quiz.question_id for quiz in generated_quizs]
+            )
+            if quiz:
+                generated_quizs.append(quiz)
+    return generated_quizs
+
+
+@app.post("/start-quiz")
+async def start_quiz():
+    quiz_id = str(uuid.uuid4())
+    questions = [await generate_quiz() for _ in range(5)]  # Generate 5 questions
+    return {"quiz_id": quiz_id, "questions": questions}
+
+
+@app.post("/finish-quiz")
+async def finish_quiz(
+    quiz_id: str = Body(...), score: int = Body(...), total_questions: int = Body(...)
+):
+    # Load existing quiz history
+    try:
+        with open("data/quiz_history.json", "r") as f:
+            content = f.read()
+            quiz_history = json.loads(content) if content else []
+    except FileNotFoundError:
+        quiz_history = []
+    except json.JSONDecodeError:
+        # If the file exists but contains invalid JSON, start with an empty list
+        quiz_history = []
+
+    # Add new quiz result
+    quiz_history.append(
+        {
+            "id": quiz_id,
+            "score": score,
+            "total_questions": total_questions,
+            "date": datetime.now().isoformat(),
+        }
+    )
+
+    # Save updated quiz history
+    with open("data/quiz_history.json", "w") as f:
+        json.dump(quiz_history, f)
+
+    return {"status": "Quiz results saved successfully"}
+
+
+class QuizHistoryEntry(BaseModel):
+    id: str
+    score: int
+    total_questions: int
+    date: str
+
+
+@app.get("/quiz-history", response_model=List[QuizHistoryEntry])
+async def get_quiz_history():
+    try:
+        with open("data/quiz_history.json", "r") as f:
+            quiz_history = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Quiz history not found")
+
+    # Sort by date (newest first) and take the top 5
+    sorted_history = sorted(quiz_history, key=lambda x: x["date"], reverse=True)[:5]
+
+    return sorted_history
+
+
+app.include_router(rag_router)
+app.include_router(quiz_router)

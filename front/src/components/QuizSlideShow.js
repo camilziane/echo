@@ -5,6 +5,15 @@ import { CheckCircleIcon } from '@heroicons/react/solid';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 
+// Shuffle function
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
 const QuizSlideshow = () => {
     const navigate = useNavigate();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -12,44 +21,103 @@ const QuizSlideshow = () => {
     const [score, setScore] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [showRecap, setShowRecap] = useState(false);
-    const [theme, setTheme] = useState('');  // New state for theme
+    const [isLoading, setIsLoading] = useState(true);
+    const [userAnswers, setUserAnswers] = useState([]);
+    const [quizId, setQuizId] = useState(null);
 
     useEffect(() => {
-        // Fetch questions and theme from your API
-        // This is a placeholder, replace with actual API call
-        setTheme('Geography');  // Set the theme
-        setQuestions([
-            {
-                id: 1,
-                question: "What is the capital of France?",
-                options: ["London", "Berlin", "Paris", "Madrid"],
-                correctAnswer: "Paris"
-            },
-            {
-                id: 2,
-                question: "Which planet is known as the Red Planet?",
-                options: ["Mars", "Venus", "Jupiter", "Saturn"],
-                correctAnswer: "Mars"
-            },
-            // Add more questions...
-        ]);
+        fetchQuestions();
     }, []);
 
-    const handleNext = () => {
-        if (selectedAnswer === questions[currentQuestionIndex].correctAnswer) {
-            setScore(score + 1);
-        }
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setSelectedAnswer(null);
-        } else {
-            // Quiz finished
-            setShowRecap(true);
+    useEffect(() => {
+        console.log("questions", questions);
+    }, [questions]); 
+
+    const fetchQuestions = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/start-quiz', {
+                method: 'POST',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to start quiz');
+            }
+            const { quiz_id, questions } = await response.json();
+            setQuizId(quiz_id);
+            const fetchedQuestions = questions.map(q => ({
+                id: q.question_id,
+                question: q.question,
+                options: shuffleArray([q.correct_answer, ...q.bad_answer]),
+                correctAnswer: q.correct_answer
+            }));
+            setQuestions(fetchedQuestions);
+        } catch (error) {
+            console.error('Error fetching quiz questions:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    const handleFinishQuiz = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/finish-quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quiz_id: quizId,
+                    score: score,
+                    total_questions: questions.length,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to save quiz results');
+            }
+            setShowRecap(true);
+        } catch (error) {
+            console.error('Error saving quiz results:', error);
+        }
+    };
+
+    const handleNext = async () => {
+        const currentQuestion = questions[currentQuestionIndex];
+        const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+        
+        if (isCorrect) {
+            setScore(score + 1);
+        }
+
+        // Save user's answer
+        setUserAnswers([...userAnswers, selectedAnswer]);
+
+        // Submit the answer to the backend
+        try {
+            const response = await fetch(`http://localhost:8000/submit-answer?question_id=${currentQuestion.id}&success=${isCorrect}`, {
+                method: 'POST',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to submit answer');
+            }
+        } catch (error) {
+            console.error('Error submitting answer:', error);
+        }
+
+        if (currentQuestionIndex === questions.length - 1) {
+            // Quiz finished
+            await handleFinishQuiz();
+        } else {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+            setSelectedAnswer(null);
+        }
+    };
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
+
     if (questions.length === 0) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen">No questions available. Please try again later.</div>;
     }
 
     const currentQuestion = questions[currentQuestionIndex];
@@ -63,11 +131,6 @@ const QuizSlideshow = () => {
             </div>
 
             <div className="flex-grow flex flex-col">
-                {/* Theme display */}
-                <div className="text-center flex-1 flex items-center justify-center">
-                    <h1 className="text-4xl font-bold text-blue-800">{theme}</h1>
-                </div>
-
                 {/* Question and answers */}
                 <div className="flex-1 flex flex-col items-center justify-start p-4">
                     <div className="w-full max-w-md">
@@ -123,7 +186,11 @@ const QuizSlideshow = () => {
                 isOpen={showRecap}
                 closeRecap={() => {
                     setShowRecap(false);
-                    navigate('/quiz-home', { state: { score, total: questions.length } });
+                    const quizData = questions.map((q, index) => ({
+                        ...q,
+                        userAnswer: userAnswers[index]
+                    }));
+                    navigate('/quiz-recap', { state: { quizData } });
                 }}
                 score={score}
                 total={questions.length}

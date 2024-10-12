@@ -13,14 +13,38 @@ import Sidebar from './Sidebar';
 
 function Memories() {
   const [memories, setMemories] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    const currentProfileId = localStorage.getItem('selectedProfileId');
+    console.log("currentProfileId", currentProfileId);
     fetch('http://localhost:8000/memories')
       .then(response => response.json())
-      .then(data => setMemories(data));
+      .then(data => {
+        // Sort memories by id in descending order
+        const sortedMemories = data.sort((a, b) => b.id - a.id);
+        setMemories(sortedMemories);
+      });
+
+    fetch('http://localhost:8000/profiles')
+      .then(response => response.json())
+      .then(data => {
+        setProfiles(data);
+        // Store profiles in localStorage
+      })
+      .catch(error => console.error('Error fetching profiles:', error));
   }, []);
+
+
+  useEffect(() => {
+    console.log("profiles", profiles);
+  }, [profiles]);
+
+  useEffect(() => {
+    console.log("memories", memories);
+  }, [memories]);
 
   const handleCardClick = (memory) => {
     navigate(`/memory/${memory.id}`, { state: { memory } });
@@ -32,6 +56,18 @@ function Memories() {
 
   const isCreateMemoryPage = location.pathname === '/create-memory';
 
+  const getProfileImage = (userId) => {
+    const profile = profiles.find(p => p.id === userId);
+    return profile && profile.image 
+      ? `data:image/jpeg;base64,${profile.image}` 
+      : `${process.env.PUBLIC_URL}/logo.png`;
+  };
+
+  const getNameForId = (userId) => {
+    const profile = profiles.find(p => p.id === userId);
+    return profile ? profile.name : 'Unknown User';
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
       <Sidebar />
@@ -42,55 +78,65 @@ function Memories() {
           <div className="space-y-8 pt-4">
             {memories.map((memory) => (
               <div key={memory.id} className="bg-white rounded-lg overflow-hidden shadow-lg">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <img
-                      src={`${process.env.PUBLIC_URL}/logo.png`}
-                      alt={memory.userName}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-                    <span className="font-semibold text-blue-800">{memory.userName}</span>
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <img
+                        src={getProfileImage(memory.owner)}
+                        alt={getNameForId(memory.owner)}
+                        className="w-10 h-10 rounded-full mr-3 object-cover"
+                      />
+                      <div>
+                        <span className="font-semibold text-blue-800">{memory.name}</span>
+                        <p className="text-sm text-blue-600">{getNameForId(memory.owner)}</p>
+                      </div>
+                    </div>
+                    <Menu as="div" className="relative">
+                      <Menu.Button className="text-blue-400 hover:text-blue-600">
+                        <DotsVerticalIcon className="h-5 w-5" />
+                      </Menu.Button>
+                      <Transition
+                        enter="transition duration-100 ease-out"
+                        enterFrom="transform scale-95 opacity-0"
+                        enterTo="transform scale-100 opacity-100"
+                        leave="transition duration-75 ease-out"
+                        leaveFrom="transform scale-100 opacity-100"
+                        leaveTo="transform scale-95 opacity-0"
+                      >
+                        <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-blue-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <div className="px-1 py-1">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  className={`${
+                                    active ? 'bg-blue-100 text-blue-800' : 'text-blue-600'
+                                  } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                >
+                                  Edit
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  className={`${
+                                    active ? 'bg-blue-100 text-blue-800' : 'text-blue-600'
+                                  } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </div>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
                   </div>
-                  <Menu as="div" className="relative">
-                    <Menu.Button className="text-blue-400 hover:text-blue-600">
-                      <DotsVerticalIcon className="h-5 w-5" />
-                    </Menu.Button>
-                    <Transition
-                      enter="transition duration-100 ease-out"
-                      enterFrom="transform scale-95 opacity-0"
-                      enterTo="transform scale-100 opacity-100"
-                      leave="transition duration-75 ease-out"
-                      leaveFrom="transform scale-100 opacity-100"
-                      leaveTo="transform scale-95 opacity-0"
-                    >
-                      <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-blue-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div className="px-1 py-1">
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                className={`${
-                                  active ? 'bg-blue-100 text-blue-800' : 'text-blue-600'
-                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                              >
-                                Edit
-                              </button>
-                            )}
-                          </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                className={`${
-                                  active ? 'bg-blue-100 text-blue-800' : 'text-blue-600'
-                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </Menu.Item>
-                        </div>
-                      </Menu.Items>
-                    </Transition>
-                  </Menu>
+  
+                  {/* Description/text under the username */}
+                  <p className="mt-2 text-blue-600">
+                    {memory.texts && memory.texts.length > 0 && memory.texts[0].text}
+                  </p>
                 </div>
                 {memory.images && memory.images.length > 1 ? (
                   <Carousel
@@ -118,33 +164,50 @@ function Memories() {
                         <img
                           src={`data:image/png;base64,${image}`}
                           alt={`${memory.name} - ${index + 1}`}
-                          className="w-full h-auto cursor-pointer"
-                          onClick={() => handleCardClick(memory)}
+                          className="w-full h-auto"
                         />
                       </div>
                     ))}
                   </Carousel>
                 ) : (
                   <img
-                    src={`data:image/png;base64,${memory.images?.[0] || memory.image}`}
+                    src={`data:image/png;base64,${memory.images?.[0]}`}
                     alt={memory.name}
-                    className="w-full h-auto cursor-pointer"
-                    onClick={() => handleCardClick(memory)}
+                    className="w-full h-auto"
                   />
                 )}
                 <div className="p-4">
-                  <p className="mb-2">
-                    <span className="font-semibold text-blue-800">{memory.userName}</span>{' '}
-                    <span className="text-blue-600">{memory.caption}</span>
+                  <p className="text-blue-400 text-sm mb-4">
+                    {memory.date}
                   </p>
-                  <p className="text-blue-400 text-sm">
-                    {memory.location} • {memory.start_date} - {memory.end_date}
-                  </p>
+                  
+                  {/* Comments section */}
+                  <div className="mt-4 space-y-3">
+                    {memory.texts && memory.texts.slice(1).map((text) => (
+                      <div key={text.id} className="flex items-start space-x-3">
+                        <img
+                          src={getProfileImage(text.id)}
+                          alt={getNameForId(text.id)}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm">
+                            <span className="font-semibold text-blue-800">{getNameForId(text.id)}</span>{' '}
+                            <span className="text-blue-600">{text.text}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Comment input */}
                   <div className="mt-4 flex items-center">
-                    <button className="text-blue-400 hover:text-blue-600 transition-colors duration-200 flex items-center">
-                      <ChatAltIcon className="h-6 w-6 mr-2" />
-                      <span>Comment</span>
-                    </button>
+                    <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      className="flex-1 border-none bg-gray-100 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button className="ml-2 text-blue-500 font-semibold">Post</button>
                   </div>
                 </div>
               </div>
