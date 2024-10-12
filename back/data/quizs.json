@@ -1,0 +1,30 @@
+{
+  "16d121b6-e0ae-459c-8772-d707cadc9edf": {
+    "question_id": "16d121b6-e0ae-459c-8772-d707cadc9edf",
+    "memory_id": "1",
+    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
+    "question": "Quel \u00e9tait l'objectif principal du projet de robot d\u00e9velopp\u00e9 par l'\u00e9quipe lors du hackathon ?",
+    "correct_answer": "D\u00e9tecter les signes de crises cardiaques chez les patients",
+    "bad_answer": [
+      "Construire un robot de divertissement",
+      "D\u00e9velopper une application de fitness",
+      "Cr\u00e9er un assistant de cuisine"
+    ],
+    "failure": 11,
+    "success": 4
+  },
+  "0de6f625-5b96-4494-b04f-f4fe96eff99c": {
+    "question_id": "0de6f625-5b96-4494-b04f-f4fe96eff99c",
+    "memory_id": "2",
+    "context": "Histoire 3 : La Nuit dans le D\u00e9sert\nL'ann\u00e9e derni\u00e8re, je me suis retrouv\u00e9 seul dans le d\u00e9sert du Sahara pour tester une nouvelle application de navigation par \u00e9toiles que j'avais d\u00e9velopp\u00e9e. Le but \u00e9tait de permettre aux randonneurs de s'orienter sans GPS. Alors que la nuit tombait, je me suis perdu, et il n'y avait plus de signal. Gr\u00e2ce \u00e0 mon application et \u00e0 un peu de calme, j'ai pu me rep\u00e9rer uniquement avec les constellations. Ce fut une exp\u00e9rience intense, mais aussi une le\u00e7on sur la confiance en ses propres outils.\n",
+    "question": "Que m'a permis de faire mon application de navigation par \u00e9toiles lorsque je me suis perdu dans le d\u00e9sert du Sahara ?",
+    "correct_answer": "Me rep\u00e9rer uniquement avec les constellations",
+    "bad_answer": [
+      "M'\u00e9clairer avec des \u00e9toiles filantes",
+      "Me prot\u00e9ger des temp\u00eates de sable",
+      "Me fournir de l'eau potable"
+    ],
+    "failure": 1,
+    "success": 1
+  }
+}
