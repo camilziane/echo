@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from glob import glob
 import json
 from fastapi.responses import JSONResponse
-from typing import List
+from typing import List, Dict
 import os
 import logging
 from datetime import datetime
@@ -226,30 +226,30 @@ def add_text_to_memory(memory_id: int, text: str, user_id: int):
     return {"status": "Text added to memory"}
 
 
+# Add this Pydantic model for quiz results
+class QuizResult(BaseModel):
+    id: str
+    type: str
+    score: int
+    total_questions: int
+    date: str
+
+
+# Update the finish-quiz endpoint
 @app.post("/finish-quiz")
-async def finish_quiz(
-    quiz_id: str = Body(...), score: int = Body(...), total_questions: int = Body(...)
-):
+async def finish_quiz(quiz_result: QuizResult):
+    # Ensure the data directory exists
+    os.makedirs("data", exist_ok=True)
+
     # Load existing quiz history
     try:
         with open("data/quiz_history.json", "r") as f:
-            content = f.read()
-            quiz_history = json.loads(content) if content else []
-    except FileNotFoundError:
-        quiz_history = []
-    except json.JSONDecodeError:
-        # If the file exists but contains invalid JSON, start with an empty list
+            quiz_history = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
         quiz_history = []
 
     # Add new quiz result
-    quiz_history.append(
-        {
-            "id": quiz_id,
-            "score": score,
-            "total_questions": total_questions,
-            "date": datetime.now().isoformat(),
-        }
-    )
+    quiz_history.append(quiz_result.dict())
 
     # Save updated quiz history
     with open("data/quiz_history.json", "w") as f:
@@ -258,25 +258,71 @@ async def finish_quiz(
     return {"status": "Quiz results saved successfully"}
 
 
-class QuizHistoryEntry(BaseModel):
-    id: str
-    score: int
-    total_questions: int
-    date: str
-
-
-@app.get("/quiz-history", response_model=List[QuizHistoryEntry])
+# Update the get-quiz-history endpoint
+@app.get("/quiz-history", response_model=List[QuizResult])
 async def get_quiz_history():
     try:
         with open("data/quiz_history.json", "r") as f:
             quiz_history = json.load(f)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Quiz history not found")
+        return []  # Return an empty list if the file doesn't exist
+    except json.JSONDecodeError:
+        return []  # Return an empty list if the file is empty or contains invalid JSON
 
     # Sort by date (newest first) and take the top 5
     sorted_history = sorted(quiz_history, key=lambda x: x["date"], reverse=True)[:5]
 
     return sorted_history
+
+
+class MemberStats(BaseModel):
+    misrecognitions: int
+    totalTime: float
+    attempts: int
+
+
+@app.post("/update-member-stats")
+async def update_member_stats(new_stats: Dict[str, MemberStats]):
+    try:
+        # Read existing stats
+        try:
+            with open("data/member_stats.json", "r") as f:
+                existing_stats = json.load(f)
+        except FileNotFoundError:
+            existing_stats = {}
+
+        # Update existing stats with new stats
+        for member, stats in new_stats.items():
+            if member not in existing_stats:
+                existing_stats[member] = stats.dict()
+            else:
+                existing_stats[member]["misrecognitions"] += stats.misrecognitions
+                existing_stats[member]["totalTime"] += stats.totalTime
+                existing_stats[member]["attempts"] += stats.attempts
+
+        # Write updated stats back to file
+        with open("data/member_stats.json", "w") as f:
+            json.dump(existing_stats, f)
+
+        return {"status": "Member stats updated successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to update member stats: {str(e)}"
+        )
+
+
+@app.get("/member-stats")
+async def get_member_stats():
+    try:
+        with open("data/member_stats.json", "r") as f:
+            stats = json.load(f)
+        return stats
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve member stats: {str(e)}"
+        )
 
 
 app.include_router(rag_router)

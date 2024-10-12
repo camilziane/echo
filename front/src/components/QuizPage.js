@@ -10,29 +10,25 @@ const QuizPage = () => {
 
     useEffect(() => {
         fetchQuizHistory();
-    }, []);
+    }, [location]);
 
     const fetchQuizHistory = async () => {
         setIsLoading(true);
         try {
             const response = await fetch('http://localhost:8000/quiz-history');
-            if (!response.ok) {
-                if (response.status === 404) {
-                    // If the history is not found (empty), set quizHistory to an empty array
-                    setQuizHistory([]);
-                } else {
-                    throw new Error('Failed to fetch quiz history');
-                }
-            } else {
-                const data = await response.json();
-                setQuizHistory(data);
-            }
+            const data = await response.json();
+            // Ensure that data is an array before setting it to state
+            setQuizHistory(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error fetching quiz history:', error);
+            console.error('Failed to fetch quiz history:', error);
             setQuizHistory([]); // Set to empty array in case of error
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const startQuiz = (quizType) => {
+        navigate('/quiz', { state: { quizType } });
     };
 
     const getScoreColor = (score) => {
@@ -43,14 +39,12 @@ const QuizPage = () => {
         return 'text-blue-200';
     };
 
-    const isCreateMemoryPage = location.pathname === '/create-memory';
-
     return (
         <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
             <Sidebar />
 
             {/* Main content */}
-            <div className={`flex-1 ${isCreateMemoryPage ? '' : 'ml-48'}`}>
+            <div className="flex-1 ml-48">
                 <div className="max-w-3xl mx-auto p-4">
                     {/* Quiz History */}
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -89,13 +83,21 @@ const QuizPage = () => {
                         )}
                     </div>
 
-                    {/* Start New Quiz Button */}
-                    <button
-                        onClick={() => navigate('/quiz')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-105"
-                    >
-                        Start New Quiz
-                    </button>
+                    {/* Start New Quiz Buttons */}
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                        <button
+                            onClick={() => startQuiz('souvenirs')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-105"
+                        >
+                            Start Souvenirs Quiz
+                        </button>
+                        <button
+                            onClick={() => startQuiz('face')}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-105"
+                        >
+                            Start Face Recognition Quiz
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
