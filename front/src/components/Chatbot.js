@@ -14,6 +14,16 @@ const Chatbot = () => {
     const [isRecording, setIsRecording] = useState(false);
     const [status, setStatus] = useState("");
 
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'fr-FR'; // Définir la langue à français
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.error("L'API Web Speech n'est pas supportée par ce navigateur.");
+        }
+    };
+
     // Définir les refs
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
@@ -46,6 +56,7 @@ const Chatbot = () => {
             });
 
             console.log("Réponse reçue:", response.content);
+            speak(response.content);
             // Ajout de la réponse du bot à l'historique des messages
             setMessages((prevMessages) => {
                 const newMessages = [
@@ -75,7 +86,6 @@ const Chatbot = () => {
                 mediaRecorderRef.current.stop();
             }
             setIsRecording(false);
-            setStatus("Enregistrement terminé, envoi en cours...");
         } else {
             navigator.mediaDevices
                 .getUserMedia({ audio: true })
@@ -85,7 +95,6 @@ const Chatbot = () => {
 
                     console.log("Enregistrement démarré...");
                     setIsRecording(true);
-                    setStatus("Enregistrement en cours...");
 
                     mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
                         audioChunksRef.current.push(event.data);
@@ -184,14 +193,15 @@ const Chatbot = () => {
                             placeholder="Tapez votre message..."
                             className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <Button
-                            variant="contained"
-                            color={isRecording ? "secondary" : "primary"}
+                        <button
                             onClick={toggleRecording}
-                            style={{ margin: "0 10px" }}
+                            className={`bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                isRecording ? "bg-blue-700" : ""
+                            }`}
+                            style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
                         >
-                            {isRecording ? "Arrêter" : "Enregistrer"}
-                        </Button>
+                            🎤
+                        </button>
                         <button
                             onClick={handleSend}
                             className="bg-blue-600 text-white p-2 rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
