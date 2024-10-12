@@ -24,10 +24,6 @@ const Chatbot = () => {
             });
 
             console.log('Réponse reçue:', response.content);
-
-            // Vérification de la structure de la réponse avant d'accéder à la propriété 'answer'
-            const botResponse = response && response.output ? response.output : "Désolé, je n'ai pas pu générer une réponse appropriée.";
-
             // Ajout de la réponse du bot à l'historique des messages
             setMessages(prevMessages => [
                 ...prevMessages, 
