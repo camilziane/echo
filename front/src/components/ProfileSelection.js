@@ -1,66 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Remplace useHistory par useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const ProfileSelection = () => {
   const [profiles, setProfiles] = useState([]);
-  const navigate = useNavigate(); // Utilise useNavigate pour la redirection
+  const navigate = useNavigate();
 
-  // Fonction pour récupérer les profils depuis le backend FastAPI
-  const fetchProfiles = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/profiles');
-      const data = await response.json();
-      setProfiles(data); // Met à jour l'état avec les données des profils
-    } catch (error) {
-      console.error('Error fetching profiles:', error);
-    }
-  };
-
-  // Utilise useEffect pour appeler fetchProfiles lorsque le composant est monté
   useEffect(() => {
-    fetchProfiles();
+    fetch('http://localhost:8000/profiles')
+      .then(response => response.json())
+      .then(data => setProfiles(data));
   }, []);
 
-  // Fonction appelée lors du clic sur un profil
   const handleProfileClick = (profile) => {
-    // Stocker l'ID du profil dans localStorage
     localStorage.setItem('selectedProfileId', profile.id);
-    
-    // Rediriger vers la page "Memories" en utilisant navigate
     navigate('/memories');
   };
 
+  const handleAddProfile = () => {
+    // navigate('/family');
+  };
+
   return (
-    <div className="profile-selection-page">
-      <h2>Select a Profile</h2>
-      <div className="profile-list">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex flex-col items-center justify-center p-4">
+      <h1 className="text-4xl font-bold text-blue-800 mb-8">Choose your profile</h1>
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl">
         {profiles.map(profile => (
-          <div
+          <button
             key={profile.id}
-            className="profile-item"
-            onClick={() => handleProfileClick(profile)} // Gestionnaire de clic
-            style={{
-              cursor: 'pointer', // Ajouter un pointeur pour indiquer que c'est cliquable
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              margin: '10px',
-            }}
+            className="group flex flex-col items-center focus:outline-none"
+            onClick={() => handleProfileClick(profile)}
           >
-            <img
-              src={`data:image/png;base64,${profile.image}`} // Afficher l'image encodée en Base64
-              alt={profile.name}
-              className="profile-image"
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-              }}
-            />
-            <p>{profile.name}</p>
-          </div>
+            <div className="w-32 h-32 rounded-md overflow-hidden border-4 border-transparent group-hover:border-blue-500 transition-all duration-200">
+              <img
+                src={`${process.env.PUBLIC_URL}/logo.png`}
+                alt={profile.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="mt-2 text-blue-600 group-hover:text-blue-800 transition-colors duration-200">
+              {profile.name}
+            </span>
+          </button>
         ))}
+        <button
+          className="group flex flex-col items-center focus:outline-none"
+          onClick={handleAddProfile}
+        >
+          <div className="w-32 h-32 rounded-md overflow-hidden border-4 border-transparent group-hover:border-blue-500 transition-all duration-200 bg-blue-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-blue-400 group-hover:text-blue-600 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <span className="mt-2 text-blue-600 group-hover:text-blue-800 transition-colors duration-200">
+            Add Profile
+          </span>
+        </button>
       </div>
     </div>
   );
