@@ -9,8 +9,13 @@ from langchain.chains.llm import LLMChain
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
+from scipy.stats import beta
+from fastapi import APIRouter
+
+import uuid
+
+router = APIRouter()
 
 # Load environment variables
 load_dotenv()
@@ -20,17 +25,6 @@ if not os.getenv("MISTRAL_API_KEY"):
 
 llm = ChatMistralAI(model="mistral-small-latest")
 
-
-app = FastAPI()
-
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-)
 
 # Store generated questions
 quizs_path = "data/quizs.json"
@@ -107,3 +101,90 @@ def save_quizs():
     with open(quizs_path, "w") as f:
         json.dump(serializable_quizs, f, indent=2)
 
+
+@router.get("/generate-random-quiz", response_model=Quiz)
+async def generate_random_quiz():
+    quizs = load_quizs()
+    try:
+        memory_id, _, random_text = get_random_memory()
+
+        mcq_questions = generate_mcq(random_text)
+
+        question_id = str(uuid.uuid4())
+
+        question_response = Quiz(
+            question_id=question_id,
+            memory_id=memory_id,
+            context=random_text,
+            question=mcq_questions.question,
+            correct_answer=mcq_questions.correct_answer,
+            bad_answer=mcq_questions.bad_answers,
+            failure=1,
+            success=1,
+        )
+
+        quizs[question_id] = question_response
+        save_quizs()
+        return question_response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/submit-answer")
+def submit_answer(question_id: str, success: bool):
+    quizs = load_quizs()
+    if question_id not in quizs:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    quiz = quizs[question_id]
+    if success:
+        quiz.success += 1
+    else:
+        quiz.failure += 1
+    save_quizs()
+    return {"status": "Question updated"}
+
+
+def thompson_sampling_quiz_selection(already_selected_quizes: list[uuid]) -> Quiz:
+    quizs = load_quizs()
+    if not quizs:
+        return None
+
+    max_score = float("-inf")
+    selected_quiz = None
+
+    for _, quiz in quizs.items():
+        if quiz.question_id in already_selected_quizes:
+            continue
+        sample = beta.rvs(quiz.failure, quiz.success)
+
+        if sample > max_score:
+            max_score = sample
+            selected_quiz = quiz
+
+    return selected_quiz
+
+
+@router.get("/generate-thompson-quiz", response_model=Quiz)
+def generate_thompson_quiz() -> Quiz:
+    return thompson_sampling_quiz_selection()
+
+
+@router.get("/generate-quiz", response_model=list[Quiz])
+async def generate_quiz(epsilon: float = 0, nb_quiz: int = 5):
+    quizs = load_quizs()
+    if not quizs:
+        return None
+
+    generated_quizs = []
+    for _ in range(nb_quiz):
+        if random.random() < epsilon:
+            generated_quizs.append(await generate_random_quiz())
+        else:
+            quiz = thompson_sampling_quiz_selection(
+                [quiz.question_id for quiz in generated_quizs]
+            )
+            if quiz:
+                generated_quizs.append(quiz)
+    return generated_quizs

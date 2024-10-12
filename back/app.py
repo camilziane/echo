@@ -6,15 +6,12 @@ from glob import glob
 import json
 from fastapi.responses import JSONResponse
 from typing import List
-from quiz import Quiz, load_quizs, save_quizs, get_random_memory, generate_mcq
-import random
-import uuid
-from fastapi import HTTPException
-from scipy.stats import beta
 import os
 import logging
 from datetime import datetime
 from fastapi import Body
+from rag import router as rag_router
+from quiz import router as quiz_router
 
 # Add this at the beginning of your app.py file
 if not os.path.exists("data"):
@@ -220,33 +217,12 @@ def get_memories():
     return sorted(memories, key=lambda x: x.date, reverse=True)
 
 
-@app.get("/generate-random-quiz", response_model=Quiz)
-async def generate_random_quiz():
-    quizs = load_quizs()
-    try:
-        memory_id, _, random_text = get_random_memory()
+def add_text_to_memory(memory_id: int, text: str, user_id: int):
+    memory_dir = f"data/memories/{memory_id}"
+    with open(f"{memory_dir}/texts/{user_id}", "w") as f:
+        f.write(text)
 
-        mcq_questions = generate_mcq(random_text)
-
-        question_id = str(uuid.uuid4())
-
-        question_response = Quiz(
-            question_id=question_id,
-            memory_id=memory_id,
-            context=random_text,
-            question=mcq_questions.question,
-            correct_answer=mcq_questions.correct_answer,
-            bad_answer=mcq_questions.bad_answers,
-            failure=1,
-            success=1,
-        )
-
-        quizs[question_id] = question_response
-        save_quizs()
-        return question_response
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {"status": "Text added to memory"}
 
 
 @app.post("/submit-answer")
@@ -367,3 +343,7 @@ async def get_quiz_history():
     sorted_history = sorted(quiz_history, key=lambda x: x["date"], reverse=True)[:5]
 
     return sorted_history
+
+
+app.include_router(rag_router)
+app.include_router(quiz_router)
