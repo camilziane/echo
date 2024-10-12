@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, CircularProgress, ImageList, ImageListItem } from '@mui/material';
+import { Box, Title, Text, Paper, Loader, SimpleGrid, Image } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 
 function Memory() {
@@ -21,29 +21,27 @@ function Memory() {
             });
     }, [id]);
 
-    if (loading) return <Box display="flex" justifyContent="center"><CircularProgress /></Box>;
-    if (!memory) return <Typography>Memory not found.</Typography>;
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center' }}><Loader /></Box>;
+    if (!memory) return <Text>Memory not found.</Text>;
 
     return (
-        <Paper elevation={3} sx={{ maxWidth: 800, margin: 'auto', padding: 3 }}>
-            <Typography variant="h4" gutterBottom>{memory.name}</Typography>
-            <Typography paragraph>{memory.texts}</Typography>
+        <Paper shadow="md" p="md" sx={{ maxWidth: 800, margin: 'auto' }}>
+            <Title order={2} mb="md">{memory.name}</Title>
+            <Text>{memory.texts}</Text>
             
             {memory.images && memory.images.length > 0 && (
-                <Box sx={{ marginTop: 2 }}>
-                    <Typography variant="h6" gutterBottom>Images</Typography>
-                    <ImageList sx={{ width: '100%', height: 'auto' }} cols={3} rowHeight={164}>
+                <Box mt="md">
+                    <Title order={4} mb="sm">Images</Title>
+                    <SimpleGrid cols={3}>
                         {memory.images.map((img, index) => (
-                            <ImageListItem key={index}>
-                                <img
-                                    src={`data:image/jpeg;base64,${img}`}
-                                    alt={`Memory image ${index + 1}`}
-                                    loading="lazy"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                            </ImageListItem>
+                            <Image
+                                key={index}
+                                src={`data:image/jpeg;base64,${img}`}
+                                alt={`Memory image ${index + 1}`}
+                                fit="cover"
+                            />
                         ))}
-                    </ImageList>
+                    </SimpleGrid>
                 </Box>
             )}
         </Paper>
