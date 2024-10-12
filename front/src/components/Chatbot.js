@@ -4,7 +4,7 @@ import { RemoteRunnable } from "@langchain/core/runnables/remote";
 import { Button, CircularProgress, Typography } from "@mui/material";
 
 // Création d'une instance RemoteRunnable pour communiquer avec le serveur LangServe
-const chain = new RemoteRunnable({ url: "http://localhost:8001/rag/c/N4XyA/" });
+const chain = new RemoteRunnable({ url: "http://localhost:8000/rag/c/N4XyA/" });
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([
@@ -19,30 +19,52 @@ const Chatbot = () => {
     const audioChunksRef = useRef([]);
 
     const handleSend = async () => {
-        if (input.trim() === "") return;
+        console.log("handleSend called with input:", input);
+
+        if (input.trim() === "") {
+            console.log("Input is empty, returning.");
+            return;
+        }
 
         const userMessage = { role: "human", content: input };
-        setMessages((prevMessages) => [...prevMessages, userMessage]);
+        console.log("User message created:", userMessage);
+
+        setMessages((prevMessages) => {
+            const newMessages = [...prevMessages, userMessage];
+            console.log("Updated messages state:", newMessages);
+            return newMessages;
+        });
+
         setInput("");
+        console.log("Input cleared.");
 
         try {
             // Invocation de la chaîne LangServe avec l'historique des messages
+            console.log("Invoking chain with messages:", messages.concat(userMessage));
             const response = await chain.invoke({
                 messages: messages.concat(userMessage),
             });
 
             console.log("Réponse reçue:", response.content);
             // Ajout de la réponse du bot à l'historique des messages
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { role: response.role, content: response.content },
-            ]);
+            setMessages((prevMessages) => {
+                const newMessages = [
+                    ...prevMessages,
+                    { role: response.role, content: response.content },
+                ];
+                console.log("Updated messages state with bot response:", newMessages);
+                return newMessages;
+            });
         } catch (error) {
             console.error("Erreur:", error);
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { role: "assistant", content: "Désolé, une erreur s'est produite." },
-            ]);
+            setMessages((prevMessages) => {
+                const newMessages = [
+                    ...prevMessages,
+                    { role: "assistant", content: "Désolé, une erreur s'est produite." },
+                ];
+                console.log("Updated messages state with error message:", newMessages);
+                return newMessages;
+            });
         }
     };
 
