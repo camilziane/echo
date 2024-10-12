@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
+import ScrollReveal from 'scrollreveal';
 import { 
   DotsVerticalIcon, 
   ChatAltIcon, 
@@ -20,6 +21,18 @@ function Memories() {
     fetch('http://localhost:8000/memories')
       .then(response => response.json())
       .then(data => setMemories(data));
+
+    // Configure ScrollReveal for a smoother animation on each memory card
+    const sr = ScrollReveal({
+      origin: 'bottom',
+      distance: '30px',         // Augmenter la distance pour un effet plus fluide
+      duration: 3000,           // Augmenter la durée pour un effet plus lent
+      opacity: 0,               // Démarrer avec une opacité de 0 pour un fade-in plus doux
+      easing: 'cubic-bezier(0.5, 0, 0, 1)', // Ajouter une courbe de Bézier pour plus de fluidité
+      scale: 1,
+      reset: false,
+    });
+    sr.reveal('.memory-card', { interval: 150 }); // Délais entre chaque carte pour un effet séquentiel
   }, []);
 
   const handleCardClick = (memory) => {
@@ -41,7 +54,7 @@ function Memories() {
         <div className="max-w-3xl mx-auto p-4">
           <div className="space-y-8 pt-4">
             {memories.map((memory) => (
-              <div key={memory.id} className="bg-white rounded-lg overflow-hidden shadow-lg">
+              <div key={memory.id} className="memory-card bg-white rounded-lg overflow-hidden shadow-lg">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center">
                     <img
@@ -100,14 +113,24 @@ function Memories() {
                     infiniteLoop={true}
                     renderArrowPrev={(onClickHandler, hasPrev, label) =>
                       hasPrev && (
-                        <button type="button" onClick={onClickHandler} title={label} className="absolute left-0 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
+                        <button
+                          type="button"
+                          onClick={onClickHandler}
+                          title={label}
+                          className="absolute left-4 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200"
+                        >
                           <ChevronLeftIcon className="h-6 w-6 text-blue-800" />
                         </button>
                       )
                     }
                     renderArrowNext={(onClickHandler, hasNext, label) =>
                       hasNext && (
-                        <button type="button" onClick={onClickHandler} title={label} className="absolute right-0 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
+                        <button
+                          type="button"
+                          onClick={onClickHandler}
+                          title={label}
+                          className="absolute right-4 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200"
+                        >
                           <ChevronRightIcon className="h-6 w-6 text-blue-800" />
                         </button>
                       )
