@@ -94,7 +94,6 @@ def get_memory_data(memory_id) -> Memory:
     texts_paths = glob(f"data/memories/{memory_id}/texts/*")
     image_paths = glob(f"data/memories/{memory_id}/images/*")
 
-    print("OK")
     # Read and encode images
     encoded_images = []
     for image_path in image_paths:
@@ -255,8 +254,7 @@ def submit_answer(question_id: str, success: bool):
     return {"status": "Question updated"}
 
 
-@app.get("/generate-thompson-quiz", response_model=Quiz)
-def thompson_sampling_quiz_selection() -> Quiz:
+def thompson_sampling_quiz_selection(already_selected_quizes: list[uuid]) -> Quiz:
     quizs = load_quizs()
     if not quizs:
         return None
@@ -265,6 +263,8 @@ def thompson_sampling_quiz_selection() -> Quiz:
     selected_quiz = None
 
     for _, quiz in quizs.items():
+        if quiz.question_id in already_selected_quizes:
+            continue
         sample = beta.rvs(quiz.failure, quiz.success)
 
         if sample > max_score:
@@ -274,14 +274,25 @@ def thompson_sampling_quiz_selection() -> Quiz:
     return selected_quiz
 
 
-@app.get("/generate-quiz", response_model=Quiz)
-async def generate_quiz(epsilon: float = 0) -> Quiz:
-    """sample a random number if it is less than epsilon, return a random question, else return the best question"""
+@app.get("/generate-thompson-quiz", response_model=Quiz)
+def generate_thompson_quiz() -> Quiz:
+    return thompson_sampling_quiz_selection()
+
+
+@app.get("/generate-quiz", response_model=list[Quiz])
+async def generate_quiz(epsilon: float = 0, nb_quiz: int = 5):
     quizs = load_quizs()
     if not quizs:
         return None
 
-    if random.random() < epsilon:
-        return await generate_random_quiz()
-    else:
-        return thompson_sampling_quiz_selection()
+    generated_quizs = []
+    for _ in range(nb_quiz):
+        if random.random() < epsilon:
+            generated_quizs.append(await generate_random_quiz())
+        else:
+            quiz = thompson_sampling_quiz_selection(
+                [quiz.question_id for quiz in generated_quizs]
+            )
+            if quiz:
+                generated_quizs.append(quiz)
+    return generated_quizs
