@@ -3,28 +3,53 @@ import { useNavigate } from 'react-router-dom';
 import { PhotographIcon, XIcon } from '@heroicons/react/solid';
 
 const CreateMemory = () => {
-    const [description, setDescription] = useState('');
-    const [images, setImages] = useState('');
+    const [name, setName] = useState('');
+    const [location, setLocation] = useState('');
+    const [date, setDate] = useState('');
+    const [text, setText] = useState('');
+    const [images, setImages] = useState([]);
     const navigate = useNavigate();
 
     const handleImageUpload = (event) => {
         const files = Array.from(event.target.files);
-        setImages([...images, ...files]);
+        Promise.all(files.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        })).then(base64Images => {
+            setImages(prevImages => [...prevImages, ...base64Images]);
+        });
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         
-        const formData = new FormData();
-        formData.append('description', description);
-        images.forEach((image, index) => {
-            formData.append(`image${index}`, image);
-        });
+        const selectedProfileId = localStorage.getItem('selectedProfileId');
+        console.log("selectedProfileId", selectedProfileId);
+        if (!selectedProfileId) {
+            console.error('No profile selected');
+            return;
+        }
+
+        const newMemory = {
+            owner: parseInt(selectedProfileId),
+            name,
+            location,
+            date,
+            images,
+            text
+        };
 
         try {
             const response = await fetch('http://localhost:8000/memories', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newMemory),
             });
 
             if (response.ok) {
@@ -52,15 +77,48 @@ const CreateMemory = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-6">
-                                <label htmlFor="description" className="block text-sm font-medium text-blue-700 mb-2">Description</label>
+                            <div className="mb-4">
+                                <label htmlFor="name" className="block text-sm font-medium text-blue-700 mb-2">Name</label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="location" className="block text-sm font-medium text-blue-700 mb-2">Location</label>
+                                <input
+                                    type="text"
+                                    id="location"
+                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="date" className="block text-sm font-medium text-blue-700 mb-2">Date</label>
+                                <input
+                                    type="date"
+                                    id="date"
+                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="text" className="block text-sm font-medium text-blue-700 mb-2">Text</label>
                                 <textarea
-                                    id="description"
+                                    id="text"
                                     rows="4"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-blue-300 rounded-md p-2"
+                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-blue-300 rounded-md p-2"
                                     placeholder="Describe your memory..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
                                     required
                                 ></textarea>
                             </div>
