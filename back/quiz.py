@@ -2,9 +2,7 @@ import random
 import json
 import os
 from glob import glob
-import pandas as pd
 import getpass
-from datetime import datetime
 from langchain_mistralai import ChatMistralAI
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
@@ -13,8 +11,6 @@ from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from scipy.stats import beta
-import uuid
 
 # Load environment variables
 load_dotenv()
@@ -103,81 +99,6 @@ def generate_mcq(context: str) -> MCQuestion:
     return parsed_output
 
 
-@app.get("/generate-random-quiz", response_model=Quiz)
-async def generate_random_quiz():
-    try:
-        memory_id, _, random_text = get_random_memory()
-
-        mcq_questions = generate_mcq(random_text)
-
-        question_id = str(uuid.uuid4())
-
-        question_response = Quiz(
-            question_id=question_id,
-            memory_id=memory_id,
-            context=random_text,
-            question=mcq_questions.question,
-            correct_answer=mcq_questions.correct_answer,
-            bad_answer=mcq_questions.bad_answers,
-            failure=1,
-            success=1,
-        )
-
-        quizs[question_id] = question_response
-        save_quizs()
-        return question_response
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/submit-answer")
-def submit_answer(question_id: str, success: bool):
-    if question_id not in quizs:
-        raise HTTPException(status_code=404, detail="Question not found")
-
-    quiz = quizs[question_id]
-    if success:
-        quiz.success += 1
-    else:
-        quiz.failure += 1
-
-    save_quizs()
-    return {"status": "Question updated"}
-
-
-@app.get("/generate-thompson-quiz", response_model=Quiz)
-def thompson_sampling_quiz_selection() -> Quiz:
-    quizs = load_quizs()
-    if not quizs:
-        return None
-
-    max_score = float("-inf")
-    selected_quiz = None
-
-    for _, quiz in quizs.items():
-        sample = beta.rvs(quiz.failure, quiz.success)
-
-        if sample > max_score:
-            max_score = sample
-            selected_quiz = quiz
-
-    return selected_quiz
-
-
-@app.get("/generate-quiz", response_model=Quiz)
-async def generate_quiz(epsilon: float = 0) -> Quiz:
-    """sample a random number if it is less than epsilon, return a random question, else return the best question"""
-    quizs = load_quizs()
-    if not quizs:
-        return None
-    
-    if random.random() < epsilon:
-        return await generate_random_quiz()
-    else:
-        return thompson_sampling_quiz_selection() 
-
-
 def save_quizs():
     """save questions to a json file"""
     serializable_quizs = {
@@ -186,8 +107,3 @@ def save_quizs():
     with open(quizs_path, "w") as f:
         json.dump(serializable_quizs, f, indent=2)
 
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="localhost", port=8002)

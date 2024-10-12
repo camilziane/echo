@@ -6,6 +6,11 @@ from glob import glob
 import json
 from fastapi.responses import JSONResponse
 from typing import List
+from quiz import Quiz, load_quizs, save_quizs, get_random_memory, generate_mcq
+import random
+import uuid
+from fastapi import HTTPException
+from scipy.stats import beta
 import os
 
 
@@ -146,6 +151,7 @@ def get_memories_data() -> List[Memory]:
         memories.append(get_memory_data(memory))
     return memories
 
+
 @app.post("/memories", response_model=Memory)
 def create_memory(new_memory: NewMemory):
     # Get the next available memory ID
@@ -189,6 +195,7 @@ def get_memory(memory_id: int):
     except FileNotFoundError:
         return JSONResponse(status_code=404, content={"message": "Memory not found"})
 
+
 @app.get("/memories", response_model=List[Memory])
 def get_memories():
     memory_paths = glob("data/memories/*")
@@ -200,5 +207,81 @@ def get_memories():
             memories.append(memory)
         except Exception as e:
             print(f"Error processing memory {memory_id}: {str(e)}")
-    
+
     return sorted(memories, key=lambda x: x.date, reverse=True)
+
+
+@app.get("/generate-random-quiz", response_model=Quiz)
+async def generate_random_quiz():
+    quizs = load_quizs()
+    try:
+        memory_id, _, random_text = get_random_memory()
+
+        mcq_questions = generate_mcq(random_text)
+
+        question_id = str(uuid.uuid4())
+
+        question_response = Quiz(
+            question_id=question_id,
+            memory_id=memory_id,
+            context=random_text,
+            question=mcq_questions.question,
+            correct_answer=mcq_questions.correct_answer,
+            bad_answer=mcq_questions.bad_answers,
+            failure=1,
+            success=1,
+        )
+
+        quizs[question_id] = question_response
+        save_quizs()
+        return question_response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/submit-answer")
+def submit_answer(question_id: str, success: bool):
+    quizs = load_quizs()
+    if question_id not in quizs:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    quiz = quizs[question_id]
+    if success:
+        quiz.success += 1
+    else:
+        quiz.failure += 1
+    save_quizs()
+    return {"status": "Question updated"}
+
+
+@app.get("/generate-thompson-quiz", response_model=Quiz)
+def thompson_sampling_quiz_selection() -> Quiz:
+    quizs = load_quizs()
+    if not quizs:
+        return None
+
+    max_score = float("-inf")
+    selected_quiz = None
+
+    for _, quiz in quizs.items():
+        sample = beta.rvs(quiz.failure, quiz.success)
+
+        if sample > max_score:
+            max_score = sample
+            selected_quiz = quiz
+
+    return selected_quiz
+
+
+@app.get("/generate-quiz", response_model=Quiz)
+async def generate_quiz(epsilon: float = 0) -> Quiz:
+    """sample a random number if it is less than epsilon, return a random question, else return the best question"""
+    quizs = load_quizs()
+    if not quizs:
+        return None
+
+    if random.random() < epsilon:
+        return await generate_random_quiz()
+    else:
+        return thompson_sampling_quiz_selection()
