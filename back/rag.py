@@ -24,6 +24,7 @@ from langchain.schema import AIMessage
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableLambda
 from fastapi import APIRouter
+import json
 
 router = APIRouter()
 
@@ -84,13 +85,12 @@ def init_vectorstore_from_memories():
             if os.path.exists(texts_folder):
                 for filename in os.listdir(texts_folder):
                     file_path = os.path.join(texts_folder, filename)
-                    print(file_path)
-                    if os.path.isfile(file_path):
-                        with open(file_path, "r", encoding="utf-8") as file:
-                            content = file.read()
-                            doc = Document(content)
-                            documents.append(doc)
-    print(documents)
+                    if os.path.isfile(file_path) and file_path.endswith(".json"):
+                        with open(file_path, "r") as file:
+                            texts = json.load(file)
+                            for id, text in texts.items():
+                                doc = Document(text)
+                                documents.append(doc)
     vdb["vectorstore"].add_documents(documents)
     vdb["retriever"] = vdb["vectorstore"].as_retriever()
     return {"status": f"Vector store initialized with {len(documents)} documents"}
