@@ -12,7 +12,13 @@ import uuid
 from fastapi import HTTPException
 from scipy.stats import beta
 import os
+import logging
+from datetime import datetime
+from fastapi import Body
 
+# Add this at the beginning of your app.py file
+if not os.path.exists("data"):
+    os.makedirs("data")
 
 # Initialisation de l'application FastAPI
 app = FastAPI()
@@ -24,6 +30,10 @@ app.add_middleware(
     allow_methods=["*"],  # Autoriser toutes les méthodes (GET, POST, etc.)
     allow_headers=["*"],  # Autoriser tous les headers
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # Modèle Pydantic pour représenter un profil
@@ -242,6 +252,8 @@ async def generate_random_quiz():
 
 @app.post("/submit-answer")
 def submit_answer(question_id: str, success: bool):
+    # Log the question_id and success with a logger
+    logger.info(f"Question ID: {question_id}, Success: {success}")
     quizs = load_quizs()
     if question_id not in quizs:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -285,3 +297,63 @@ async def generate_quiz(epsilon: float = 0) -> Quiz:
         return await generate_random_quiz()
     else:
         return thompson_sampling_quiz_selection()
+
+
+@app.post("/start-quiz")
+async def start_quiz():
+    quiz_id = str(uuid.uuid4())
+    questions = [await generate_quiz() for _ in range(5)]  # Generate 5 questions
+    return {"quiz_id": quiz_id, "questions": questions}
+
+
+@app.post("/finish-quiz")
+async def finish_quiz(
+    quiz_id: str = Body(...), score: int = Body(...), total_questions: int = Body(...)
+):
+    # Load existing quiz history
+    try:
+        with open("data/quiz_history.json", "r") as f:
+            content = f.read()
+            quiz_history = json.loads(content) if content else []
+    except FileNotFoundError:
+        quiz_history = []
+    except json.JSONDecodeError:
+        # If the file exists but contains invalid JSON, start with an empty list
+        quiz_history = []
+
+    # Add new quiz result
+    quiz_history.append(
+        {
+            "id": quiz_id,
+            "score": score,
+            "total_questions": total_questions,
+            "date": datetime.now().isoformat(),
+        }
+    )
+
+    # Save updated quiz history
+    with open("data/quiz_history.json", "w") as f:
+        json.dump(quiz_history, f)
+
+    return {"status": "Quiz results saved successfully"}
+
+
+class QuizHistoryEntry(BaseModel):
+    id: str
+    score: int
+    total_questions: int
+    date: str
+
+
+@app.get("/quiz-history", response_model=List[QuizHistoryEntry])
+async def get_quiz_history():
+    try:
+        with open("data/quiz_history.json", "r") as f:
+            quiz_history = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Quiz history not found")
+
+    # Sort by date (newest first) and take the top 5
+    sorted_history = sorted(quiz_history, key=lambda x: x["date"], reverse=True)[:5]
+
+    return sorted_history
