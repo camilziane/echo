@@ -1,0 +1,29 @@
+2024-10-12 20:59:59,749 - fastapi - ERROR - Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+2024-10-12 21:04:05,624 - app - INFO - Requête de transcription reçue
+2024-10-12 21:04:05,624 - app - INFO - Fichier audio sauvegardé : ./tmp/recording.mp3
+2024-10-12 21:04:05,624 - app - INFO - Envoi du fichier audio au client Groq pour transcription
+2024-10-12 21:04:06,126 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2024-10-12 21:04:06,128 - app - INFO - Transcription réussie
+2024-10-12 21:04:06,128 - app - INFO - Fichier temporaire supprimé : ./tmp/recording.mp3
+2024-10-12 21:06:47,059 - app - INFO - Requête de transcription reçue
+2024-10-12 21:06:47,059 - app - INFO - Fichier audio sauvegardé : ./tmp/recording.mp3
+2024-10-12 21:06:47,060 - app - INFO - Envoi du fichier audio au client Groq pour transcription
+2024-10-12 21:06:47,671 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2024-10-12 21:06:47,673 - app - INFO - Transcription réussie
+2024-10-12 21:06:47,673 - app - INFO - Fichier temporaire supprimé : ./tmp/recording.mp3
+2024-10-12 21:06:58,317 - app - INFO - Requête de transcription reçue
+2024-10-12 21:06:58,317 - app - INFO - Fichier audio sauvegardé : ./tmp/recording.mp3
+2024-10-12 21:06:58,318 - app - INFO - Envoi du fichier audio au client Groq pour transcription
+2024-10-12 21:06:58,889 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2024-10-12 21:06:58,890 - app - INFO - Transcription réussie
+2024-10-12 21:06:58,891 - app - INFO - Fichier temporaire supprimé : ./tmp/recording.mp3
+2024-10-12 21:09:58,562 - app - INFO - Requête de transcription reçue
+2024-10-12 21:09:58,562 - app - INFO - Fichier audio sauvegardé : ./tmp/recording.mp3
+2024-10-12 21:09:58,563 - app - INFO - Envoi du fichier audio au client Groq pour transcription
+2024-10-12 21:09:59,493 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2024-10-12 21:09:59,494 - app - INFO - Transcription réussie
+2024-10-12 21:09:59,494 - app - INFO - Fichier temporaire supprimé : ./tmp/recording.mp3
