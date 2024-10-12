@@ -6,6 +6,7 @@ from glob import glob
 import json
 from fastapi.responses import JSONResponse
 from typing import List
+import os
 
 
 # Initialisation de l'application FastAPI
@@ -27,24 +28,39 @@ class Profile(BaseModel):
     image: str
 
 
+class Text(BaseModel):
+    id: int
+    text: str
+
+
+class NewMemory(BaseModel):
+    owner: int
+    name: str
+    location: str
+    date: str
+    images: List[str]
+    text: str
+
+
 class Memory(BaseModel):
     id: int
     owner: int
     name: str
     location: str
-    start_date: str
-    end_date: str
+    date: str
     images: List[str]
-    texts: List[str]
+    texts: List[Text]
+
 
 class MemoryPreview(BaseModel):
     id: int
     owner: int
     name: str
     location: str
-    start_date: str
+    date: str
     end_date: str
     image: str
+
 
 def get_profiles_data():
     profiles = []
@@ -68,36 +84,36 @@ def get_profiles():
     return profiles
 
 
-
 def get_memory_data(memory_id) -> Memory:
     metadata = json.load(open(f"data/memories/{memory_id}/metadata.json"))
-    texts_paths = glob(f"data/memories/{memory_id}/texts/*.txt")
+    texts_paths = glob(f"data/memories/{memory_id}/texts/*")
     image_paths = glob(f"data/memories/{memory_id}/images/*")
-    
+
+    print("OK")
     # Read and encode images
     encoded_images = []
     for image_path in image_paths:
         with open(image_path, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
             encoded_images.append(encoded_image)
-    
     # Read text files
     texts = []
     for text_path in texts_paths:
         with open(text_path, "r") as text_file:
-            texts.append(text_file.read())
-    
+            name = os.path.basename(text_path)
+            texts.append(Text(id=int(name), text=text_file.read()))
+
     memory = Memory(
         id=memory_id,
         owner=metadata["owner"],
         name=metadata["name"],
         location=metadata["location"],
-        start_date=metadata["start_date"],
-        end_date=metadata["end_date"],
+        date=metadata["date"],
         images=encoded_images,
         texts=texts,
     )
     return memory
+
 
 def get_memory_preview(memory_id) -> MemoryPreview:
     metadata = json.load(open(f"data/memories/{memory_id}/metadata.json"))
@@ -109,11 +125,12 @@ def get_memory_preview(memory_id) -> MemoryPreview:
         owner=metadata["owner"],
         name=metadata["name"],
         location=metadata["location"],
-        start_date=metadata["start_date"],
+        date=metadata["date"],
         end_date=metadata["end_date"],
         image=encoded_image,
     )
     return memory_preview
+
 
 def get_memories_previews() -> List[MemoryPreview]:
     memories_previews = []
@@ -122,21 +139,49 @@ def get_memories_previews() -> List[MemoryPreview]:
         memories_previews.append(get_memory_preview(memory_id))
     return memories_previews
 
+
 def get_memories_data() -> List[Memory]:
     memories = []
     for memory in glob("data/memories/*"):
         memories.append(get_memory_data(memory))
     return memories
 
-@app.get("/memories", response_model=List[MemoryPreview])
-def get_memories():
-    return get_memories_previews()
+@app.post("/memories", response_model=Memory)
+def create_memory(new_memory: NewMemory):
+    # Get the next available memory ID
+    existing_memories = glob("data/memories/*")
+    new_memory_id = len(existing_memories) + 1
+
+    # Create directory structure
+    memory_dir = f"data/memories/{new_memory_id}"
+    os.makedirs(f"{memory_dir}/images", exist_ok=True)
+    os.makedirs(f"{memory_dir}/texts", exist_ok=True)
+
+    # Save metadata
+    metadata = {
+        "owner": new_memory.owner,
+        "name": new_memory.name,
+        "location": new_memory.location,
+        "date": new_memory.date,
+    }
+    with open(f"{memory_dir}/metadata.json", "w") as f:
+        json.dump(metadata, f)
+
+    # Save images
+    for i, image_data in enumerate(new_memory.images):
+        image_bytes = base64.b64decode(image_data)
+        with open(f"{memory_dir}/images/image_{i+1}.png", "wb") as f:
+            f.write(image_bytes)
+
+    # Save texts
+    with open(f"{memory_dir}/texts/{new_memory.owner}", "w") as f:
+        f.write(new_memory.text)
+
+    # Return the created memory
+    return get_memory_data(new_memory_id)
+
 
 @app.get("/memories/{memory_id}", response_model=Memory)
-def get_memory(memory_id: int):
-    return get_memory_data(memory_id)
-
-@app.get("/memories/{memory_id}")
 def get_memory(memory_id: int):
     try:
         memory = get_memory_data(memory_id)
@@ -144,4 +189,16 @@ def get_memory(memory_id: int):
     except FileNotFoundError:
         return JSONResponse(status_code=404, content={"message": "Memory not found"})
 
-
+@app.get("/memories", response_model=List[Memory])
+def get_memories():
+    memory_paths = glob("data/memories/*")
+    memories = []
+    for path in memory_paths:
+        memory_id = int(os.path.basename(path))
+        try:
+            memory = get_memory_data(memory_id)
+            memories.append(memory)
+        except Exception as e:
+            print(f"Error processing memory {memory_id}: {str(e)}")
+    
+    return sorted(memories, key=lambda x: x.date, reverse=True)
