@@ -149,9 +149,12 @@ function Memories() {
                       <img
                         src={getProfileImage(memory.owner)}
                         alt={getNameForId(memory.owner)}
-                        className="w-10 h-10 rounded-full mr-3 object-cover"
+                        className="w-12 h-12 rounded-full mr-3 object-cover"
                       />
                       <div>
+                        {/* Memory title next to the photo */}
+                        <h2 className="text-xl font-bold text-blue-800">{memory.name}</h2>
+                        {/* Name under the title, less bold */}
                         <p className="text-sm text-blue-600">{getNameForId(memory.owner)}</p>
                       </div>
                     </div>
