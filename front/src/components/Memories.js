@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { 
@@ -10,6 +10,7 @@ import {
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import Sidebar from './Sidebar';
+import ScrollReveal from 'scrollreveal';
 
 function Memories() {
   const [memories, setMemories] = useState([]);
@@ -17,30 +18,53 @@ function Memories() {
   const [newComments, setNewComments] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
+  const memoriesRef = useRef([]);
 
   useEffect(() => {
     const currentProfileId = localStorage.getItem('selectedProfileId');
     console.log("currentProfileId", currentProfileId);
+
+    // Récupération des mémoires
     fetch('http://localhost:8000/memories')
       .then(response => response.json())
-      .then(data => setMemories(data));
+      .then(data => {
+        // Trier les mémoires par id décroissant
+        const sortedMemories = data.sort((a, b) => b.id - a.id);
+        setMemories(sortedMemories);
+      });
 
+    // Récupération des profils
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
       .then(data => {
         setProfiles(data);
-        // Store profiles in localStorage
       })
-      .catch(error => console.error('Error fetching profiles:', error));
+      .catch(error => console.error('Erreur lors de la récupération des profils:', error));
   }, []);
 
-
   useEffect(() => {
-    console.log("profiles", profiles);
-  }, [profiles]);
+    // Appliquer les animations ScrollReveal lorsque les mémoires sont chargées
+    if (memoriesRef.current) {
+      memoriesRef.current.forEach((el, index) => {
+        if (el) {
+          ScrollReveal().reveal(el, {
+            delay: 0,
+            duration: 800,
+            easing: 'ease-in-out',
+            opacity: 0,
+            distance: '50px',
+            reset: false,
+            origin: 'bottom',
+            viewFactor: 0.2, // Déclenche l'animation lorsque 20% de l'élément est visible
+          });
+        }
+      });
+    }
 
-  useEffect(() => {
-    console.log("memories", memories);
+    // Fonction de nettoyage pour éviter les fuites de mémoire
+    return () => {
+      ScrollReveal().destroy();
+    };
   }, [memories]);
 
   const handleCardClick = (memory) => {
@@ -113,12 +137,17 @@ function Memories() {
     <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
       <Sidebar />
 
-      {/* Main content */}
+      {/* Contenu principal */}
       <div className={`flex-1 ${isCreateMemoryPage ? '' : 'ml-48'}`}>
         <div className="max-w-3xl mx-auto p-4">
           <div className="space-y-8 pt-4">
-            {memories.map((memory) => (
-              <div key={memory.id} className="bg-white rounded-lg overflow-hidden shadow-lg">
+            {memories.map((memory, index) => (
+              <div
+                key={memory.id}
+                className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer"
+                ref={el => memoriesRef.current[index] = el}
+                onClick={() => handleCardClick(memory)}
+              >
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
@@ -173,8 +202,8 @@ function Memories() {
                       </Transition>
                     </Menu>
                   </div>
-  
-                  {/* Description/text under the username */}
+      
+                  {/* Description ou texte sous le nom d'utilisateur */}
                   <p className="mt-2 text-blue-600">
                     {memory.texts && memory.texts.length > 0 && memory.texts[0].text}
                   </p>
@@ -200,29 +229,31 @@ function Memories() {
                       )
                     }
                   >
-                    {memory.images.map((image, index) => (
-                      <div key={index}>
+                    {memory.images.map((image, idx) => (
+                      <div key={idx}>
                         <img
                           src={`data:image/png;base64,${image}`}
-                          alt={`${memory.name} - ${index + 1}`}
+                          alt={`${memory.name} - ${idx + 1}`}
                           className="w-full h-auto"
                         />
                       </div>
                     ))}
                   </Carousel>
                 ) : (
-                  <img
-                    src={`data:image/png;base64,${memory.images?.[0]}`}
-                    alt={memory.name}
-                    className="w-full h-auto"
-                  />
+                  memory.images && memory.images.length === 1 && (
+                    <img
+                      src={`data:image/png;base64,${memory.images[0]}`}
+                      alt={memory.name}
+                      className="w-full h-auto"
+                    />
+                  )
                 )}
                 <div className="p-4">
                   <p className="text-blue-400 text-sm mb-4">
                     {memory.date}
                   </p>
                   
-                  {/* Comments section */}
+                  {/* Section des commentaires */}
                   <div className="mt-4 space-y-3">
                     {memory.texts && memory.texts.slice(1).map((text) => (
                       <div key={text.id} className="flex items-start space-x-3">
@@ -241,7 +272,7 @@ function Memories() {
                     ))}
                   </div>
 
-                  {/* Comment input */}
+                  {/* Champ d'ajout de commentaire */}
                   <div className="mt-4 flex items-center">
                     <input
                       type="text"
