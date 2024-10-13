@@ -7,6 +7,7 @@ import Chatbot from './components/Chatbot';
 import CreateMemory from './components/CreateMemory';
 import QuizPage from './components/QuizPage';
 import QuizSlideshow from './components/QuizSlideShow';
+import QuizRecapSlideshow from './components/QuizRecapSlideshow';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/create-memory" element={<CreateMemory />} />
           <Route path="/quiz-home" element={<QuizPage />} />
           <Route path="/quiz" element={<QuizSlideshow />} />
+          <Route path="/quiz-recap" element={<QuizRecapSlideshow />} />
         </Routes>
       </div>
     </Router>
