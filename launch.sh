@@ -23,8 +23,8 @@ cd back
 
 
 # Set environment variables
-export GROQ_API_KEY="=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"
-export MISTRAL_API_KEY="lcDzRPm2CmmrxY020WnUBmDQ8Xe1Im1r"
+export GROQ_API_KEY=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
+export MISTRAL_API_KEY=lcDzRPm2CmmrxY020WnUBmDQ8Xe1Im1r
 
 # Sync backend dependencies
 echo "Syncing backend dependencies..."
