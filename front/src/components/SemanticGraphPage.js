@@ -13,8 +13,7 @@ import { Group, SphereGeometry, MeshBasicMaterial, Mesh } from "three";
 const passions = [
   // Musique et arts
   "Music",       // [0.9, 0.1, 0.0, 0.0, 0.0]
-  "Dancing",     // [0.8, 0.2, 0.0, 0.0, 0.0]
-  "Painting",    // [0.85, 0.15, 0.0, 0.0, 0.0]
+  
   "Writing",     // [0.88, 0.12, 0.0, 0.0, 0.0]
   "Photography", // [0.87, 0.13, 0.0, 0.0, 0.0]
   
@@ -22,26 +21,22 @@ const passions = [
   // Sports et activités physiques
   "Sports",      // [0.0, 0.9, 0.1, 0.0, 0.0]
   "Hiking",      // [0.0, 0.85, 0.15, 0.0, 0.0]
-  "Running",     // [0.0, 0.88, 0.12, 0.0, 0.0]
-  "Cycling",     // [0.0, 0.87, 0.13, 0.0, 0.0]
+  
   "Swimming",    // [0.0, 0.86, 0.14, 0.0, 0.0]
   
   // Loisirs et jeux
-  "Gaming",      // [0.0, 0.0, 0.9, 0.1, 0.0]
-  "Board Games", // [0.0, 0.0, 0.85, 0.15, 0.0]
-  "Puzzles",     // [0.0, 0.0, 0.88, 0.12, 0.0]
+  
   "Collecting",  // [0.0, 0.0, 0.87, 0.13, 0.0]
+  "Gaming",      // [0.0, 0.0, 0.87, 0.13, 0.0]
 
 
   // Activités créatives et artisanat
   "Crafting",    // [0.0, 0.0, 0.0, 0.9, 0.1]
   "Knitting",    // [0.0, 0.0, 0.0, 0.85, 0.15]
-  "Sewing",      // [0.0, 0.0, 0.0, 0.88, 0.12]
-  
+
 
   // Lecture et méditation
   "Reading",     // [0.0, 0.0, 0.0, 0.0, 0.9]
-  "Meditation",  // [0.0, 0.0, 0.0, 0.0, 0.85]
   "Travel",      // [0.0, 0.0, 0.0, 0.0, 0.88]
  
 ];
@@ -51,8 +46,7 @@ const passions = [
  */const embeddings = [
   // Musique et arts
   [0.9, 0.1, 0.3, 0.5, 0.0].map(x => x * 2.3),  // Music
-  [0.7, 0.4, 0.2, 0.3, 0.0].map(x => x * 2.3),  // Dancing
-  [0.85, 0.3, 0.1, 0.0, 0.0].map(x => x * 2.3), // Painting
+  
   [0.88, 0.2, 0.4, -0.3, 0.0].map(x => x * 2.3), // Writing
   [0.87, 0.5, 0.2, 0.7, 0.0].map(x => x * 2.3), // Photography
 
@@ -60,28 +54,25 @@ const passions = [
   // Sports et activités physiques
   [0.3, 0.9, 0.6, 0.0, 0.0].map(x => x * 2.3),  // Sports
   [0.2, 0.85, 0.7, 0.0, 0.0].map(x => x * 2.3), // Hiking
-  [0.1, 0.88, 0.5, 0.0, 0.0].map(x => x * 2.3), // Running
-  [0.4, 0.87, 0.6, 0.0, 0.0].map(x => x * 2.3), // Cycling
+  
   [0.5, 0.86, 0.7, 0.0, 0.0].map(x => x * 2.3), // Swimming
 
 
   // Loisirs et jeux
   [0.0, 0.3, 0.9, 0.6, 0.0].map(x => x * 2.3),  // Gaming
-  [0.0, 0.2, 0.85, 0.7, 0.0].map(x => x * 2.3), // Board Games
-  [0.0, 0.1, 0.88, 0.5, 0.0].map(x => x * 2.3), // Puzzles
+  
   [0.0, 0.4, 0.87, 0.6, 0.0].map(x => x * 2.3), // Collecting
 
 
   // Activités créatives et artisanat
   [0.0, 0.0, 0.3, 0.9, 0.6].map(x => x * 2.3),  // Crafting
   [0.0, 0.0, 0.2, 0.85, 0.7].map(x => x * 2.3), // Knitting
-  [0.0, 0.0, 0.1, 0.88, 0.5].map(x => x * 2.3), // Sewing
+ 
 
 
   // Lecture et méditation
   [0.0, 0.0, 0.0, 0.3, 0.9].map(x => x * 2.3),  // Reading
-  [0.0, 0.0, 0.0, 0.2, 0.85].map(x => x * 2.3), // Meditation
-  [0.0, 0.0, 0.0, 0.1, 0.88].map(x => x * 2.3), // Travel
+  [0.0, 0.0, 0.0, 0.5, 0.88].map(x => x * 2.3), // Travel
  
 ];
 
@@ -205,7 +196,7 @@ const SemanticGraphPage = () => {
       <Sidebar />
       <div className="flex-1 p-4">
         <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-1rem)] flex flex-col items-center">
-          <h1 className="text-2xl font-bold mb-4 text-blue-800">Recap Graph</h1>
+          <h1 className="text-2xl font-bold mb-4 text-blue-800">Brain</h1>
           {error ? (
             <p className="text-red-500">{error}</p>
           ) : (

@@ -6,14 +6,16 @@ import {
   PlusIcon,
   BookOpenIcon,
   SparklesIcon,
-  HeartIcon
+  HeartIcon,
+  LightBulbIcon // Added BrainIconSolid
 } from '@heroicons/react/outline';
 import { 
   HomeIcon as HomeIconSolid, 
   QuestionMarkCircleIcon as QuestionMarkCircleIconSolid, 
   PlusIcon as PlusIconSolid,
   HeartIcon as HeartIconSolid, 
-  BookOpenIcon as BookOpenIconSolid
+  BookOpenIcon as BookOpenIconSolid,
+  LightBulbIcon as LightBulbIconSolid // Added BrainIconSolid
 } from '@heroicons/react/solid';
 
 const Sidebar = () => {
@@ -63,6 +65,15 @@ const Sidebar = () => {
           {isActive('/quiz-home') ? <QuestionMarkCircleIconSolid className="h-6 w-6" /> : <QuestionMarkCircleIcon className="h-6 w-6" />}
           <span className="text-sm">Quiz</span>
         </Link>
+        
+        <Link
+          ref={el => linksRef.current[4] = el}
+          to="/graph"
+          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
+        >
+          {isActive('/graph') ? <LightBulbIconSolid className="h-6 w-6 text-blue-800" /> : <LightBulbIcon className="h-6 w-6 text-blue-800" />}
+          <span className="text-sm text-blue-800">Brain</span>
+        </Link>
         <Link
           ref={el => linksRef.current[3] = el}
           to="/create-memory"
@@ -70,14 +81,6 @@ const Sidebar = () => {
         >
           {isActive('/create-memory') ? <PlusIconSolid className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
           <span className="text-sm">New</span>
-        </Link>
-        <Link
-          ref={el => linksRef.current[4] = el}
-          to="/graph"
-          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
-        >
-          {isActive('/graph') ? <HeartIconSolid className="h-6 w-6 text-blue-800" /> : <HeartIcon className="h-6 w-6 text-blue-800" />}
-          <span className="text-sm text-blue-800">Recap Graph</span>
         </Link>
       </div>
     </div>
