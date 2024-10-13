@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PhotographIcon, XIcon } from '@heroicons/react/solid';
 import { Button, CircularProgress, Typography } from "@mui/material";
@@ -38,6 +38,14 @@ const CreateMemory = () => {
         };
     }, []);
 
+    // Refs pour le MediaRecorder et les chunks audio
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+
+    /**
+     * Gère le téléchargement des images et les convertit en base64
+     * @param {Event} event - L'événement de changement de fichier
+     */
     const handleImageUpload = (event) => {
         const files = Array.from(event.target.files);
         setImages([...images, ...files]);
@@ -76,6 +84,99 @@ const CreateMemory = () => {
             }
         } catch (error) {
             console.error('Error creating memory:', error);
+        }
+    };
+
+    /**
+     * Bascule l'enregistrement audio
+     */
+    const toggleRecording = () => {
+        if (isRecording) {
+            if (mediaRecorderRef.current) {
+                console.log("Arrêt de l'enregistrement...");
+                mediaRecorderRef.current.stop();
+            }
+            setIsRecording(false);
+            setStatus("Enregistrement terminé, envoi en cours...");
+        } else {
+            navigator.mediaDevices
+                .getUserMedia({ audio: true })
+                .then((stream) => {
+                    mediaRecorderRef.current = new MediaRecorder(stream);
+                    mediaRecorderRef.current.start();
+
+                    console.log("Enregistrement démarré...");
+                    setIsRecording(true);
+                    setStatus("Enregistrement en cours...");
+
+                    mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
+                        audioChunksRef.current.push(event.data);
+                        console.log("Données audio disponibles:", event.data);
+                    });
+
+                    mediaRecorderRef.current.addEventListener("stop", () => {
+                        console.log("Enregistrement arrêté, envoi des données...");
+                        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/mp3" });
+                        sendAudioToServer(audioBlob);
+                        audioChunksRef.current = [];
+                    });
+                })
+                .catch((error) => {
+                    console.error("Erreur lors de l'accès au microphone:", error);
+                    setStatus("Erreur lors de l'accès au microphone.");
+                });
+        }
+    };
+
+    /**
+     * Envoie l'audio enregistré au serveur pour transcription
+     * @param {Blob} audioBlob - Le blob audio à envoyer
+     */
+    const sendAudioToServer = async (audioBlob) => {
+        console.log("Envoi de l'audio au serveur...");
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "enregistrement.mp3");
+
+        try {
+            console.log("Début de la requête de transcription...");
+            const controller = new AbortController();
+            const timeout = setTimeout(() => {
+                controller.abort();
+                console.log("Temps écoulé, arrêt de la requête.");
+                setStatus("Erreur : temps écoulé lors de la transcription.");
+            }, 10000); // Arrête la requête après 10 secondes
+
+            const response = await fetch("http://localhost:8000/transcribe", {
+                method: "POST",
+                body: formData,
+                signal: controller.signal,
+            });
+
+            clearTimeout(timeout); // Annule le timeout si la réponse arrive avant
+            console.log(`Réponse reçue du serveur. Statut: ${response.status}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Erreur HTTP! statut: ${response.status}, message: ${errorText}`);
+                throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Données de transcription reçues:", data);
+
+            if (data.error) {
+                setStatus(`Erreur : ${data.error}`);
+            } else {
+                setText(data.transcription);
+                setStatus("");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la transcription:", error);
+            if (error.name === 'AbortError') {
+                setStatus("Erreur : la requête a été annulée en raison d'un délai d'attente.");
+            } else {
+                setStatus(`Erreur : ${error.message}`);
+            }
         }
     };
 

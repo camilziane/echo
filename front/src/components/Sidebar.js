@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import ScrollReveal from 'scrollreveal';
 import { 
   HomeIcon, 
   QuestionMarkCircleIcon, 
@@ -18,28 +17,6 @@ const Sidebar = () => {
   const linksRef = useRef([]);
 
   const isActive = (path) => location.pathname === path;
-
-  useEffect(() => {
-    // Appliquer les animations ScrollReveal aux liens de la barre latérale
-    linksRef.current.forEach((link, index) => {
-      if (link) {
-        ScrollReveal().reveal(link, {
-          delay: index * 100,
-          duration: 500,
-          easing: 'ease-in-out',
-          opacity: 0,
-          reset: true,
-          origin: 'left',
-          distance: '20px',
-        });
-      }
-    });
-
-    // Fonction de nettoyage
-    return () => {
-      ScrollReveal().destroy();
-    };
-  }, []);
 
   // Déterminer si la barre latérale doit être rendue
   const shouldRenderSidebar = location.pathname !== '/create-memory';
