@@ -1,84 +1,126 @@
 {
-  "16d121b6-e0ae-459c-8772-d707cadc9edf": {
-    "question_id": "16d121b6-e0ae-459c-8772-d707cadc9edf",
-    "memory_id": "1",
-    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
-    "question": "Quel \u00e9tait l'objectif principal du projet de robot d\u00e9velopp\u00e9 par l'\u00e9quipe lors du hackathon ?",
-    "correct_answer": "D\u00e9tecter les signes de crises cardiaques chez les patients",
-    "bad_answer": [
-      "Construire un robot de divertissement",
-      "D\u00e9velopper une application de fitness",
-      "Cr\u00e9er un assistant de cuisine"
-    ],
-    "failure": 11,
-    "success": 4
-  },
-  "0de6f625-5b96-4494-b04f-f4fe96eff99c": {
-    "question_id": "0de6f625-5b96-4494-b04f-f4fe96eff99c",
+  "96c7cd59-2365-4cc4-bb32-8d543b9d8321": {
+    "question_id": "96c7cd59-2365-4cc4-bb32-8d543b9d8321",
     "memory_id": "2",
-    "context": "Histoire 3 : La Nuit dans le D\u00e9sert\nL'ann\u00e9e derni\u00e8re, je me suis retrouv\u00e9 seul dans le d\u00e9sert du Sahara pour tester une nouvelle application de navigation par \u00e9toiles que j'avais d\u00e9velopp\u00e9e. Le but \u00e9tait de permettre aux randonneurs de s'orienter sans GPS. Alors que la nuit tombait, je me suis perdu, et il n'y avait plus de signal. Gr\u00e2ce \u00e0 mon application et \u00e0 un peu de calme, j'ai pu me rep\u00e9rer uniquement avec les constellations. Ce fut une exp\u00e9rience intense, mais aussi une le\u00e7on sur la confiance en ses propres outils.\n",
-    "question": "Que m'a permis de faire mon application de navigation par \u00e9toiles lorsque je me suis perdu dans le d\u00e9sert du Sahara ?",
-    "correct_answer": "Me rep\u00e9rer uniquement avec les constellations",
+    "context": "Every morning, Grandpa and Jane walk along the beach, just Jane and the waves. Grandpa tells Jane stories about Grandpa's adventures at sea, where the wind and waves led Grandpa. Jane loves these walks\u2014it feels like Jane is part of Grandpa's stories, too.",
+    "question": "What does Jane love about her morning walks with Grandpa?",
+    "correct_answer": "Feeling like she is part of Grandpa's stories",
     "bad_answer": [
-      "M'\u00e9clairer avec des \u00e9toiles filantes",
-      "Me prot\u00e9ger des temp\u00eates de sable",
-      "Me fournir de l'eau potable"
+      "Seeing the beach",
+      "Listening to the wind",
+      "Watching the sunrise"
     ],
     "failure": 1,
     "success": 1
   },
-  "dd57baca-e56d-4b31-bef5-70d2be0b6eae": {
-    "question_id": "dd57baca-e56d-4b31-bef5-70d2be0b6eae",
-    "memory_id": "1",
-    "context": "Histoire 1 : La D\u00e9couverte en Amazonie\nIl y a deux ans, je me suis lanc\u00e9 dans une exp\u00e9dition en Amazonie pour tester un drone autonome que j'avais con\u00e7u pour cartographier des for\u00eats denses. Au milieu de la jungle, mon drone a d\u00e9tect\u00e9 des ruines anciennes que personne n'avait encore d\u00e9couvertes. Ce fut un moment de pur \u00e9merveillement. En les explorant, j\u2019ai ressenti cette connexion entre la technologie et l\u2019histoire humaine, un sentiment de pont entre deux mondes.\n",
-    "question": "Quelle technologie a permis de d\u00e9couvrir les ruines anciennes en Amazonie ?",
-    "correct_answer": "Un drone autonome",
+  "3a396171-b99f-40e3-9d4c-5bf7518d18e1": {
+    "question_id": "3a396171-b99f-40e3-9d4c-5bf7518d18e1",
+    "memory_id": "5",
+    "context": "{\n  \"67585a63-4c78-47cf-a5ac-a96876ae7d2c\": \"Emma remembers that hike too, Jenn! Grandpa was so peaceful up there with Emma, just soaking in the moment. It\u2019s amazing how those simple times together meant so much. Emma is grateful for every memory Emma made as a family.\"\n}\n",
+    "question": "What does Emma remember fondly about the hike with her grandpa?",
+    "correct_answer": "The peaceful and simple moments they shared together.",
     "bad_answer": [
-      "Un GPS",
-      "Une boussole",
-      "Un satellite"
+      "The challenging terrain they faced.",
+      "The abundance of wildlife they saw.",
+      "The long distance they hiked."
     ],
     "failure": 1,
     "success": 1
   },
-  "ffa20826-8ffd-45a3-a96a-80cacff97a0e": {
-    "question_id": "ffa20826-8ffd-45a3-a96a-80cacff97a0e",
+  "61db24bf-2d97-4cef-b170-8c7df7f90a79": {
+    "question_id": "61db24bf-2d97-4cef-b170-8c7df7f90a79",
     "memory_id": "1",
-    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
-    "question": "Quel \u00e9tait le principal objectif du robot construit par votre \u00e9quipe lors du hackathon ?",
-    "correct_answer": "D\u00e9tecter les signes de crises cardiaques chez les patients",
+    "context": "Jane will never forget the afternoons Jane spent with Grandpa. When Jane was little, Grandpa would always hold Jane on Grandpa's lap and show Jane how to write with Grandpa's favorite green pen. Grandpa would tell Jane stories about Grandpa's childhood while patiently guiding Jane's tiny hand, helping Jane form letters. Jane didn't understand much back then, but Jane loved the sound of Grandpa's voice and the warmth of Grandpa's embrace. Even though it was something as simple as writing, it felt like the most important thing in the world because Jane and Grandpa were doing it together.",
+    "question": "What color was Grandpa's pen?",
+    "correct_answer": "Green",
     "bad_answer": [
-      "Pr\u00e9parer des repas pour les patients",
-      "Effectuer des chirurgies mineures",
-      "Aider les patients \u00e0 faire de l'exercice"
+      "Red",
+      "Blue",
+      "Black"
     ],
     "failure": 1,
     "success": 1
   },
-  "cad2f1d6-0a7d-439b-b4c8-3bcb8aa79004": {
-    "question_id": "cad2f1d6-0a7d-439b-b4c8-3bcb8aa79004",
-    "memory_id": "1",
-    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
-    "question": "Que fait le robot construit par l'\u00e9quipe lors du hackathon ?",
-    "correct_answer": "D\u00e9tecte les signes de crises cardiaques chez les patients",
+  "741dce84-ccbf-4a2f-8c0e-0726f67b617e": {
+    "question_id": "741dce84-ccbf-4a2f-8c0e-0726f67b617e",
+    "memory_id": "3",
+    "context": "When David was little, Grandpa Robert used to take David out to the garden. Grandpa Robert always had Grandpa Robert's pipe in hand, and David remembers Grandpa Robert smiling at David the way Grandpa Robert did in that old photo\u2014the one where Grandpa Robert is holding David, a tiny bundle wrapped in blue. Grandpa Robert was so proud, even though David had no idea what was happening at the time. David always loved hearing Grandpa Robert's stories as David got older, about how that greenhouse behind them was where Grandpa Robert grew the best tomatoes, how every plant had a story, just like David and Grandpa Robert.",
+    "question": "What did Grandpa Robert always have in hand when he took David out to the garden?",
+    "correct_answer": "His pipe",
     "bad_answer": [
-      "Pr\u00e9pare des repas pour les patients",
-      "Aide \u00e0 faire le m\u00e9nage dans les h\u00f4pitaux",
-      "Joue de la musique pour divertir les patients"
+      "A gardening hat",
+      "A camera",
+      "A fishing rod"
     ],
     "failure": 1,
     "success": 1
   },
-  "f763691f-a9b3-45ec-a869-ceb851d612d3": {
-    "question_id": "f763691f-a9b3-45ec-a869-ceb851d612d3",
-    "memory_id": "1",
-    "context": "Histoire 2 : Le Robot Qui Sauve\nLors d\u2019un hackathon l\u2019ann\u00e9e derni\u00e8re, mon \u00e9quipe et moi avons construit un robot capable de d\u00e9tecter les signes de crises cardiaques chez les patients. Ce projet nous tenait \u00e0 c\u0153ur car un ami proche avait \u00e9t\u00e9 victime d'une crise l'ann\u00e9e pr\u00e9c\u00e9dente. Le robot, en test clinique, a d\u00e9j\u00e0 alert\u00e9 \u00e0 temps plusieurs patients, leur sauvant potentiellement la vie. Pour moi, c'\u00e9tait un moment o\u00f9 la technologie avait un r\u00e9el impact, non seulement innovant, mais aussi humain.\n",
-    "question": "Quelle technologie a \u00e9t\u00e9 d\u00e9velopp\u00e9e par l'\u00e9quipe lors du hackathon de l'ann\u00e9e derni\u00e8re ?",
-    "correct_answer": "Un robot capable de d\u00e9tecter les signes de crises cardiaques",
+  "e2ec911c-5ed4-4220-b7fa-cf9005cb3f36": {
+    "question_id": "e2ec911c-5ed4-4220-b7fa-cf9005cb3f36",
+    "memory_id": "5",
+    "context": "{\n  \"67585a63-4c78-47cf-a5ac-a96876ae7d2c\": \"Emma remembers that hike too, Jenn! Grandpa was so peaceful up there with Emma, just soaking in the moment. It\u2019s amazing how those simple times together meant so much. Emma is grateful for every memory Emma made as a family.\"\n}\n",
+    "question": "What did Emma find so meaningful about the hike with Grandpa?",
+    "correct_answer": "The simple times together meant so much.",
     "bad_answer": [
-      "Un logiciel de gestion de biblioth\u00e8que",
-      "Un drone de livraison de repas",
-      "Un syst\u00e8me de reconnaissance vocale"
+      "They hiked to the highest peak.",
+      "Grandpa was very talkative.",
+      "Emma was the only one who remembered it."
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "c1084a38-144c-413b-8d46-a3d8972cbd85": {
+    "question_id": "c1084a38-144c-413b-8d46-a3d8972cbd85",
+    "memory_id": "2",
+    "context": "Every morning, Grandpa and Jane walk along the beach, just Jane and the waves. Grandpa tells Jane stories about Grandpa's adventures at sea, where the wind and waves led Grandpa. Jane loves these walks\u2014it feels like Jane is part of Grandpa's stories, too.",
+    "question": "What does Jane love most about her morning walks with Grandpa?",
+    "correct_answer": "Feeling like she is part of Grandpa's stories",
+    "bad_answer": [
+      "The smell of the sea",
+      "Collecting seashells",
+      "Watching the sunset"
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "b87a1d57-1793-447e-a906-6542a2f3a4a5": {
+    "question_id": "b87a1d57-1793-447e-a906-6542a2f3a4a5",
+    "memory_id": "2",
+    "context": "Every morning, Grandpa and Jane walk along the beach, just Jane and the waves. Grandpa tells Jane stories about Grandpa's adventures at sea, where the wind and waves led Grandpa. Jane loves these walks\u2014it feels like Jane is part of Grandpa's stories, too.",
+    "question": "Why does Jane love walking along the beach with Grandpa in the morning?",
+    "correct_answer": "Because she feels like she is part of Grandpa's stories too.",
+    "bad_answer": [
+      "Because she loves the weather in the morning.",
+      "Because she enjoys the crowd on the beach.",
+      "Because she likes the noise of the waves."
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "13db9057-3cf8-4e68-a8c4-ed85bae7241f": {
+    "question_id": "13db9057-3cf8-4e68-a8c4-ed85bae7241f",
+    "memory_id": "5",
+    "context": "{\n  \"67585a63-4c78-47cf-a5ac-a96876ae7d2c\": \"Emma remembers that hike too, Jenn! Grandpa was so peaceful up there with Emma, just soaking in the moment. It\u2019s amazing how those simple times together meant so much. Emma is grateful for every memory Emma made as a family.\"\n}\n",
+    "question": "What did Emma and Grandpa do during the hike that made it so peaceful and memorable?",
+    "correct_answer": "They were soaking in the moment.",
+    "bad_answer": [
+      "They were playing a game.",
+      "They were having a picnic.",
+      "They were exploring the wildlife."
+    ],
+    "failure": 1,
+    "success": 1
+  },
+  "46b937df-7103-4a96-b543-e52c142ea188": {
+    "question_id": "46b937df-7103-4a96-b543-e52c142ea188",
+    "memory_id": "2",
+    "context": "Every morning, Grandpa and Jane walk along the beach, just Jane and the waves. Grandpa tells Jane stories about Grandpa's adventures at sea, where the wind and waves led Grandpa. Jane loves these walks\u2014it feels like Jane is part of Grandpa's stories, too.",
+    "question": "What does Jane love to do with Grandpa every morning?",
+    "correct_answer": "Walk along the beach",
+    "bad_answer": [
+      "Swim in the ocean",
+      "Climb trees",
+      "Play in the park"
     ],
     "failure": 1,
     "success": 1
