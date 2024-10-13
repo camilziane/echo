@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScrollReveal from 'scrollreveal';
 
@@ -6,35 +6,44 @@ const ProfileSelection = () => {
   const [profiles, setProfiles] = useState([]);
   const navigate = useNavigate();
   const title = "Choose your profile";
+  const profileContainerRef = useRef(null);
+  const titleRef = useRef(null);
+  const isSRInitialized = useRef(false); // Drapeau pour éviter la ré-initialisation
 
   useEffect(() => {
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
       .then(data => setProfiles(data));
+  }, []);
 
-    // Animation douce pour les cartes de profils
-    ScrollReveal().reveal('.profile-card', {
-      delay: 100,
-      duration: 1000,
-      easing: 'ease-in-out',
-      opacity: 0,
-      scale: 0.95,
-      reset: true,
-      viewFactor: 0.5,
-    });
-
-    // Animation lettre par lettre pour le titre
-    const letters = document.querySelectorAll('.title-letter');
-    letters.forEach((letter, i) => {
-      ScrollReveal().reveal(letter, {
-        delay: i * 50, // décalage pour chaque lettre
-        duration: 700,
+  useEffect(() => {
+    if (!isSRInitialized.current && profiles.length > 0 && profileContainerRef.current && titleRef.current) {
+      // Initialiser ScrollReveal pour les cartes de profil
+      ScrollReveal().reveal(profileContainerRef.current.querySelectorAll('.profile-card'), {
+        interval: 100,
+        duration: 1000,
         easing: 'ease-in-out',
         opacity: 0,
-        reset: true,
+        scale: 0.95,
+        reset: false,
+        viewFactor: 0.5,
       });
-    });
-  }, []);
+
+      // Initialiser ScrollReveal pour les lettres du titre
+      const letters = titleRef.current.querySelectorAll('.title-letter');
+      letters.forEach((letter, i) => {
+        ScrollReveal().reveal(letter, {
+          delay: i * 50,
+          duration: 700,
+          easing: 'ease-in-out',
+          opacity: 0,
+          reset: false,
+        });
+      });
+
+      isSRInitialized.current = true; // Marquer comme initialisé
+    }
+  }, [profiles]);
 
   const handleProfileClick = (profile) => {
     localStorage.setItem('selectedProfileId', profile.id);
@@ -47,14 +56,14 @@ const ProfileSelection = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold text-blue-800 mb-8">
+      <h1 className="text-4xl font-bold text-blue-800 mb-8" ref={titleRef}>
         {title.split('').map((char, index) => (
           <span key={index} className="title-letter inline-block">
-            {char === ' ' ? '\u00A0' : char} {/* espace pour les espaces */}
+            {char === ' ' ? '\u00A0' : char}
           </span>
         ))}
       </h1>
-      <div className="flex flex-wrap justify-center gap-4 max-w-4xl">
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl" ref={profileContainerRef}>
         {profiles.map(profile => (
           <button
             key={profile.id}
@@ -63,7 +72,7 @@ const ProfileSelection = () => {
           >
             <div className="w-32 h-32 rounded-md overflow-hidden border-4 border-transparent group-hover:border-blue-500 transition-all duration-200">
               <img
-                src={`${process.env.PUBLIC_URL}/logo.png`}
+                src={`data:image/jpeg;base64,${profile.image}`}
                 alt={profile.name}
                 className="w-full h-full object-cover"
               />

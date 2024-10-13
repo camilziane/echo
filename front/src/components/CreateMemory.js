@@ -5,7 +5,6 @@ import ScrollReveal from 'scrollreveal';
 import { CircularProgress, Typography } from '@mui/material';
 
 const CreateMemory = () => {
-    const [location, setLocation] = useState('');
     const [text, setText] = useState('');
     const [images, setImages] = useState([]);
     const [isRecording, setIsRecording] = useState(false);
@@ -36,11 +35,6 @@ const CreateMemory = () => {
 
         return () => sr.destroy();
     }, []);
-
-    const handleImageUpload = (event) => {
-        const files = Array.from(event.target.files);
-        setImages([...images, ...files]);
-    };
 
     const toggleRecording = () => {
         if (isRecording) {
@@ -118,28 +112,44 @@ const CreateMemory = () => {
         }
     };
 
+    const handleImageUpload = (event) => {
+        const files = Array.from(event.target.files);
+        Promise.all(files.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }))
+        .then(results => {
+            setImages(prevImages => [...prevImages, ...results]);
+        });
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         const selectedProfileId = localStorage.getItem('selectedProfileId');
         console.log("selectedProfileId", selectedProfileId);
         if (!selectedProfileId) {
-            console.error('Aucun profil sélectionné');
+            console.error('No profile selected');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('owner', selectedProfileId);
-        formData.append('location', location);
-        formData.append('text', text);
-        images.forEach((image, index) => {
-            formData.append(`image${index}`, image);
-        });
+        const data = {
+            owner: parseInt(selectedProfileId),
+            text: text,
+            images: images.map(img => img.split(',')[1]) // Remove the data:image/png;base64, part
+        };
 
         try {
             const response = await fetch('http://localhost:8000/memories', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
 
             if (response.ok) {
@@ -151,13 +161,15 @@ const CreateMemory = () => {
             console.error('Error creating memory:', error);
         }
     };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex items-center justify-center">
             <div className="max-w-3xl w-full mx-auto p-4">
                 <div className="bg-white rounded-lg overflow-hidden shadow-lg">
                     <div className="p-6">
+                        {/* Header */}
                         <div className="flex justify-between items-center mb-6" ref={el => fieldsRef.current[0] = el}>
-                            <h2 className="text-2xl font-semibold text-blue-800">Créer une Nouvelle Mémoire</h2>
+                            <h2 className="text-2xl font-semibold text-blue-800">Create a new memory</h2>
                             <button
                                 onClick={() => navigate('/memories')}
                                 className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
@@ -166,18 +178,8 @@ const CreateMemory = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label htmlFor="location" className="block text-sm font-medium text-blue-700 mb-2">Location</label>
-                                <input
-                                    type="text"
-                                    id="location"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
+                            {/* Text Field */}
+                            <div className="mb-4" ref={el => fieldsRef.current[1] = el}>
                                 <label htmlFor="text" className="block text-sm font-medium text-blue-700 mb-2">Text</label>
                                 <div className="flex items-center">
                                     <textarea
@@ -212,7 +214,8 @@ const CreateMemory = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="mb-6">
+                            {/* Image Upload */}
+                            <div className="mb-6" ref={el => fieldsRef.current[2] = el}>
                                 <label className="block text-sm font-medium text-blue-700 mb-2">Upload Images</label>
                                 <div className="mt-1 flex items-center">
                                     <label htmlFor="file-upload" className="cursor-pointer bg-white py-2 px-3 border border-blue-300 rounded-md shadow-sm text-sm leading-4 font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -228,11 +231,12 @@ const CreateMemory = () => {
                                         onChange={handleImageUpload}
                                     />
                                     <span className="ml-3 text-sm text-blue-500">
-                                        {images.length} {images.length === 1 ? 'image' : 'images'} selected
+                                        {images.length} {images.length === 1 ? 'image selected' : 'images selected'}
                                     </span>
                                 </div>
                             </div>
-                            <div className="flex justify-between">
+                            {/* Action Buttons */}
+                            <div className="flex justify-between" ref={el => fieldsRef.current[3] = el}>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/memories')}
@@ -244,7 +248,7 @@ const CreateMemory = () => {
                                     type="submit"
                                     className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                 >
-                                    Create Memory
+                                    Create the memory
                                 </button>
                             </div>
                         </form>
