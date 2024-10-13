@@ -138,7 +138,7 @@ def get_memory_data(memory_id) -> Memory:
         name=metadata["name"],
         date=metadata["date"],
         images=encoded_images,
-        description="Description processing by camz",
+        description=metadata["description"],
         texts=texts,
     )
     return memory
@@ -168,6 +168,7 @@ def create_memory(new_memory: NewMemory):
         "owner": new_memory.owner,
         "name": name,
         "date": datetime.now().strftime("%Y-%m-%d"),
+        "description": new_memory.text,
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
         json.dump(metadata, f)
@@ -177,11 +178,6 @@ def create_memory(new_memory: NewMemory):
         image_bytes = base64.b64decode(image_data)
         with open(f"{memory_dir}/images/image_{i+1}.png", "wb") as f:
             f.write(image_bytes)
-
-    # Save texts
-    with open(f"{memory_dir}/texts/{new_memory.owner}.json", "w") as f:
-        memory = {str(uuid.uuid4()): new_memory.text}
-        f.write(json.dumps(memory))
 
     # Return the created memory
     return get_memory_data(new_memory_id)
