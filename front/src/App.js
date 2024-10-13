@@ -8,6 +8,7 @@ import CreateMemory from './components/CreateMemory';
 import QuizPage from './components/QuizPage';
 import QuizSlideshow from './components/QuizSlideShow';
 import SemanticGraphPage from './components/SemanticGraphPage';  
+import QuizRecapSlideshow from './components/QuizRecapSlideshow';
 import './App.css';
 
 

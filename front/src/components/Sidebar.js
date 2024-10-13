@@ -6,12 +6,14 @@ import {
   PlusIcon,
   BookOpenIcon,
   SparklesIcon,
-  ChartBarIcon
+  HeartIcon
 } from '@heroicons/react/outline';
 import { 
   HomeIcon as HomeIconSolid, 
   QuestionMarkCircleIcon as QuestionMarkCircleIconSolid, 
-  PlusIcon as PlusIconSolid
+  PlusIcon as PlusIconSolid,
+  HeartIcon as HeartIconSolid, 
+  BookOpenIcon as BookOpenIconSolid
 } from '@heroicons/react/solid';
 
 const Sidebar = () => {
@@ -74,8 +76,8 @@ const Sidebar = () => {
           to="/graph"
           className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
-          {isActive('/graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
-          <span className="text-sm">Semantic Graph</span>
+          {isActive('/graph') ? <HeartIconSolid className="h-6 w-6" /> : <HeartIcon className="h-6 w-6" />}
+          <span className="text-sm">Recap Graph</span>
         </Link>
       </div>
     </div>

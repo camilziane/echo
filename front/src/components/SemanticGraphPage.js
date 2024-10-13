@@ -17,8 +17,7 @@ const passions = [
   "Painting",    // [0.85, 0.15, 0.0, 0.0, 0.0]
   "Writing",     // [0.88, 0.12, 0.0, 0.0, 0.0]
   "Photography", // [0.87, 0.13, 0.0, 0.0, 0.0]
-  "Drawing",     // [0.86, 0.14, 0.0, 0.0, 0.0]
-  "Sculpting",   // [0.89, 0.11, 0.0, 0.0, 0.0]
+  
 
   // Sports et activités physiques
   "Sports",      // [0.0, 0.9, 0.1, 0.0, 0.0]
@@ -26,30 +25,25 @@ const passions = [
   "Running",     // [0.0, 0.88, 0.12, 0.0, 0.0]
   "Cycling",     // [0.0, 0.87, 0.13, 0.0, 0.0]
   "Swimming",    // [0.0, 0.86, 0.14, 0.0, 0.0]
-  "Yoga",        // [0.0, 0.89, 0.11, 0.0, 0.0]
-  "Martial Arts",// [0.0, 0.84, 0.16, 0.0, 0.0]
-
+  
   // Loisirs et jeux
   "Gaming",      // [0.0, 0.0, 0.9, 0.1, 0.0]
   "Board Games", // [0.0, 0.0, 0.85, 0.15, 0.0]
   "Puzzles",     // [0.0, 0.0, 0.88, 0.12, 0.0]
   "Collecting",  // [0.0, 0.0, 0.87, 0.13, 0.0]
-  "Birdwatching",// [0.0, 0.0, 0.86, 0.14, 0.0]
-  "Astronomy",   // [0.0, 0.0, 0.89, 0.11, 0.0]
+
 
   // Activités créatives et artisanat
   "Crafting",    // [0.0, 0.0, 0.0, 0.9, 0.1]
   "Knitting",    // [0.0, 0.0, 0.0, 0.85, 0.15]
   "Sewing",      // [0.0, 0.0, 0.0, 0.88, 0.12]
-  "Gardening",   // [0.0, 0.0, 0.0, 0.87, 0.13]
-  "Volunteering",// [0.0, 0.0, 0.0, 0.86, 0.14]
+  
 
   // Lecture et méditation
   "Reading",     // [0.0, 0.0, 0.0, 0.0, 0.9]
   "Meditation",  // [0.0, 0.0, 0.0, 0.0, 0.85]
   "Travel",      // [0.0, 0.0, 0.0, 0.0, 0.88]
-  "Cooking",     // [0.0, 0.0, 0.0, 0.0, 0.87]
-  "Fishing"      // [0.0, 0.0, 0.0, 0.0, 0.86]
+ 
 ];
 
 /**
@@ -61,8 +55,7 @@ const passions = [
   [0.85, 0.3, 0.1, 0.0, 0.0].map(x => x * 2.3), // Painting
   [0.88, 0.2, 0.4, -0.3, 0.0].map(x => x * 2.3), // Writing
   [0.87, 0.5, 0.2, 0.7, 0.0].map(x => x * 2.3), // Photography
-  [0.86, 0.6, 0.3, -0.6, 0.0].map(x => x * 2.3), // Drawing
-  [0.89, 0.1, 0.5, 0.4, 0.0].map(x => x * 2.3), // Sculpting
+
 
   // Sports et activités physiques
   [0.3, 0.9, 0.6, 0.0, 0.0].map(x => x * 2.3),  // Sports
@@ -70,30 +63,26 @@ const passions = [
   [0.1, 0.88, 0.5, 0.0, 0.0].map(x => x * 2.3), // Running
   [0.4, 0.87, 0.6, 0.0, 0.0].map(x => x * 2.3), // Cycling
   [0.5, 0.86, 0.7, 0.0, 0.0].map(x => x * 2.3), // Swimming
-  [0.2, 0.89, 0.4, 0.0, 0.0].map(x => x * 2.3), // Yoga
-  [0.1, 0.84, 0.8, 0.0, 0.0].map(x => x * 2.3), // Martial Arts
+
 
   // Loisirs et jeux
   [0.0, 0.3, 0.9, 0.6, 0.0].map(x => x * 2.3),  // Gaming
   [0.0, 0.2, 0.85, 0.7, 0.0].map(x => x * 2.3), // Board Games
   [0.0, 0.1, 0.88, 0.5, 0.0].map(x => x * 2.3), // Puzzles
   [0.0, 0.4, 0.87, 0.6, 0.0].map(x => x * 2.3), // Collecting
-  [0.0, 0.5, 0.86, 0.7, 0.0].map(x => x * 2.3), // Birdwatching
-  [0.0, 0.2, 0.89, 0.4, 0.0].map(x => x * 2.3), // Astronomy
+
 
   // Activités créatives et artisanat
   [0.0, 0.0, 0.3, 0.9, 0.6].map(x => x * 2.3),  // Crafting
   [0.0, 0.0, 0.2, 0.85, 0.7].map(x => x * 2.3), // Knitting
   [0.0, 0.0, 0.1, 0.88, 0.5].map(x => x * 2.3), // Sewing
-  [0.0, 0.0, 0.4, 0.87, 0.6].map(x => x * 2.3), // Gardening
-  [0.0, 0.0, 0.5, 0.86, 0.7].map(x => x * 2.3), // Volunteering
+
 
   // Lecture et méditation
   [0.0, 0.0, 0.0, 0.3, 0.9].map(x => x * 2.3),  // Reading
   [0.0, 0.0, 0.0, 0.2, 0.85].map(x => x * 2.3), // Meditation
   [0.0, 0.0, 0.0, 0.1, 0.88].map(x => x * 2.3), // Travel
-  [0.0, 0.0, 0.0, 0.4, 0.87].map(x => x * 2.3), // Cooking
-  [0.0, 0.0, 0.0, 0.5, 0.86].map(x => x * 2.3), // Fishing
+ 
 ];
 
 /**
@@ -216,7 +205,7 @@ const SemanticGraphPage = () => {
       <Sidebar />
       <div className="flex-1 p-4">
         <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-1rem)] flex flex-col items-center">
-          <h1 className="text-2xl font-bold mb-4">3d semantic graph</h1>
+          <h1 className="text-2xl font-bold mb-4">Recap Graph</h1>
           {error ? (
             <p className="text-red-500">{error}</p>
           ) : (
@@ -243,7 +232,7 @@ const SemanticGraphPage = () => {
                   if (font) {
                     const textGeometry = new TextGeometry(node.name, {
                       font: font,
-                      size: 5,
+                      size: 8,
                       height: 1,
                     });
                     const textMaterial = new MeshBasicMaterial({ color: 0x000000 });
