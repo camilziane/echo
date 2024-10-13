@@ -205,7 +205,7 @@ const SemanticGraphPage = () => {
       <Sidebar />
       <div className="flex-1 p-4">
         <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-1rem)] flex flex-col items-center">
-          <h1 className="text-2xl font-bold mb-4">Recap Graph</h1>
+          <h1 className="text-2xl font-bold mb-4 text-blue-800">Recap Graph</h1>
           {error ? (
             <p className="text-red-500">{error}</p>
           ) : (
@@ -216,15 +216,15 @@ const SemanticGraphPage = () => {
                 nodeLabel={node => node.name}
                 linkWidth={link => link.value * 1}
                 linkOpacity={1}
-                linkColor={() => "#000000"}
-                nodeColor={() => "#000000"}
+                linkColor={() => "#2B6CB0"}
+                nodeColor={() => "#2B6CB0"}
                 backgroundColor="#FFFFFF"
                 nodeThreeObject={node => {
                   const group = new Group();
 
                   // Créer la sphère
                   const geometry = new SphereGeometry(5, 32, 32);
-                  const material = new MeshBasicMaterial({ color: 0x000000 });
+                  const material = new MeshBasicMaterial({ color: "#0000FF" });
                   const sphere = new Mesh(geometry, material);
                   group.add(sphere);
 
@@ -235,7 +235,7 @@ const SemanticGraphPage = () => {
                       size: 8,
                       height: 1,
                     });
-                    const textMaterial = new MeshBasicMaterial({ color: 0x000000 });
+                    const textMaterial = new MeshBasicMaterial({ color: "#00008B" });
                     const textMesh = new Mesh(textGeometry, textMaterial);
                     textMesh.position.set(10, 10, 0);
                     group.add(textMesh);

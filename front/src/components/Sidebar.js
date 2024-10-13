@@ -76,8 +76,8 @@ const Sidebar = () => {
           to="/graph"
           className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
-          {isActive('/graph') ? <HeartIconSolid className="h-6 w-6" /> : <HeartIcon className="h-6 w-6" />}
-          <span className="text-sm">Recap Graph</span>
+          {isActive('/graph') ? <HeartIconSolid className="h-6 w-6 text-blue-800" /> : <HeartIcon className="h-6 w-6 text-blue-800" />}
+          <span className="text-sm text-blue-800">Recap Graph</span>
         </Link>
       </div>
     </div>
