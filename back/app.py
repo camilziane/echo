@@ -369,7 +369,7 @@ def add_text_to_memory(memory_id: int, text: str = Body(...), user_id: int = Bod
 
     with open(file_path, "w") as f:
         json.dump(texts, f, indent=2)
-
+    text = preprocess_context(profiles[user_id], text)
     add_document(text)
     return {"status": "Text added to memory", "id": text_uuid}
 
