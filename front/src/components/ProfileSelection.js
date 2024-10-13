@@ -11,9 +11,9 @@ const ProfileSelection = () => {
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
       .then(data => setProfiles(data));
-
-    // Animation douce pour les cartes de profils
-    ScrollReveal().reveal('.profile-card', {
+      
+      // Animation douce pour les cartes de profils
+      ScrollReveal().reveal('.profile-card', {
       delay: 100,
       duration: 1000,
       easing: 'ease-in-out',
@@ -22,7 +22,7 @@ const ProfileSelection = () => {
       reset: true,
       viewFactor: 0.5,
     });
-
+    
     // Animation lettre par lettre pour le titre
     const letters = document.querySelectorAll('.title-letter');
     letters.forEach((letter, i) => {
@@ -34,6 +34,7 @@ const ProfileSelection = () => {
         reset: true,
       });
     });
+    console.log(profiles);
   }, []);
 
   const handleProfileClick = (profile) => {
@@ -63,7 +64,7 @@ const ProfileSelection = () => {
           >
             <div className="w-32 h-32 rounded-md overflow-hidden border-4 border-transparent group-hover:border-blue-500 transition-all duration-200">
               <img
-                src={`${process.env.PUBLIC_URL}/logo.png`}
+                src={`data:image/jpeg;base64,${profile.image}`}
                 alt={profile.name}
                 className="w-full h-full object-cover"
               />

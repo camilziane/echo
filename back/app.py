@@ -74,7 +74,7 @@ class Memory(BaseModel):
 
 def get_profiles_data():
     profiles = []
-    for profile in glob("data/profiles/*.png"):
+    for profile in glob("data/profiles/*"):
         with open(profile, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
         profiles.append(
