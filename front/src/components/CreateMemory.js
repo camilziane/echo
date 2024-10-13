@@ -36,11 +36,6 @@ const CreateMemory = () => {
         return () => sr.destroy();
     }, []);
 
-    const handleImageUpload = (event) => {
-        const files = Array.from(event.target.files);
-        setImages([...images, ...files]);
-    };
-
     const toggleRecording = () => {
         if (isRecording) {
             if (mediaRecorderRef.current) {
@@ -117,6 +112,21 @@ const CreateMemory = () => {
         }
     };
 
+    const handleImageUpload = (event) => {
+        const files = Array.from(event.target.files);
+        Promise.all(files.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }))
+        .then(results => {
+            setImages(prevImages => [...prevImages, ...results]);
+        });
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -128,8 +138,9 @@ const CreateMemory = () => {
         }
 
         const data = {
-            owner: selectedProfileId,
-            text: text
+            owner: parseInt(selectedProfileId),
+            text: text,
+            images: images.map(img => img.split(',')[1]) // Remove the data:image/png;base64, part
         };
 
         try {
