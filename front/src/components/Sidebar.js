@@ -67,10 +67,10 @@ const Sidebar = () => {
         </Link>
         <Link
           ref={el => linksRef.current[4] = el}
-          to="/semantic-graph"
-          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/semantic-graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
+          to="/graph"
+          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
-          {isActive('/semantic-graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
+          {isActive('/graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
           <span className="text-sm">Semantic Graph</span>
         </Link>
       </div>
