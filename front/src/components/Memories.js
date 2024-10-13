@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { 
   DotsVerticalIcon, 
-  ChatAltIcon, 
   ChevronLeftIcon, 
   ChevronRightIcon 
 } from '@heroicons/react/outline';
@@ -24,26 +23,30 @@ function Memories() {
     const currentProfileId = localStorage.getItem('selectedProfileId');
     console.log("currentProfileId", currentProfileId);
 
-    // Récupération des mémoires
+    // Fetch memories
     fetch('http://localhost:8000/memories')
       .then(response => response.json())
       .then(data => {
-        // Trier les mémoires par id décroissant
         const sortedMemories = data.sort((a, b) => b.id - a.id);
         setMemories(sortedMemories);
       });
 
-    // Récupération des profils
+    // Fetch profiles
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
       .then(data => {
         setProfiles(data);
       })
-      .catch(error => console.error('Erreur lors de la récupération des profils:', error));
+      .catch(error => console.error('Error fetching profiles:', error));
   }, []);
 
   useEffect(() => {
-    // Appliquer les animations ScrollReveal lorsque les mémoires sont chargées
+
+    console.log("memories", memories)
+  }, [memories])
+
+  useEffect(() => {
+    // Apply ScrollReveal animations
     if (memoriesRef.current) {
       memoriesRef.current.forEach((el, index) => {
         if (el) {
@@ -55,13 +58,12 @@ function Memories() {
             distance: '50px',
             reset: false,
             origin: 'bottom',
-            viewFactor: 0.2, // Déclenche l'animation lorsque 20% de l'élément est visible
+            viewFactor: 0.2,
           });
         }
       });
     }
 
-    // Fonction de nettoyage pour éviter les fuites de mémoire
     return () => {
       ScrollReveal().destroy();
     };
@@ -69,10 +71,6 @@ function Memories() {
 
   const handleCardClick = (memory) => {
     // navigate(`/memory/${memory.id}`, { state: { memory } });
-  };
-
-  const handleAddMemory = () => {
-    navigate('/create-memory');
   };
 
   const isCreateMemoryPage = location.pathname === '/create-memory';
@@ -111,7 +109,6 @@ function Memories() {
 
       const result = await response.json();
 
-      // Update the local state with the new comment
       setMemories(prevMemories => 
         prevMemories.map(memory => 
           memory.id === memoryId
@@ -126,7 +123,6 @@ function Memories() {
         )
       );
 
-      // Clear the input field
       setNewComments(prev => ({ ...prev, [memoryId]: '' }));
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -134,10 +130,9 @@ function Memories() {
   }, [newComments]);
 
   return (
-<div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
-<Sidebar />
+    <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
+      <Sidebar />
 
-      {/* Contenu principal */}
       <div className={`flex-1 ${isCreateMemoryPage ? '' : 'ml-48'}`}>
         <div className="max-w-3xl mx-auto p-4">
           <div className="space-y-8 pt-4">
@@ -157,7 +152,6 @@ function Memories() {
                         className="w-10 h-10 rounded-full mr-3 object-cover"
                       />
                       <div>
-                        <span className="font-semibold text-blue-800">{memory.name}</span>
                         <p className="text-sm text-blue-600">{getNameForId(memory.owner)}</p>
                       </div>
                     </div>
@@ -203,9 +197,9 @@ function Memories() {
                     </Menu>
                   </div>
       
-                  {/* Description ou texte sous le nom d'utilisateur */}
+                  {/* Memory description */}
                   <p className="mt-2 text-blue-600">
-                    {memory.texts && memory.texts.length > 0 && memory.texts[0].text}
+                    {memory.description}
                   </p>
                 </div>
                 {memory.images && memory.images.length > 1 ? (
@@ -233,7 +227,7 @@ function Memories() {
                       <div key={idx}>
                         <img
                           src={`data:image/png;base64,${image}`}
-                          alt={`${memory.name} - ${idx + 1}`}
+                          alt={`Memory image ${idx + 1}`}
                           className="w-full h-auto"
                         />
                       </div>
@@ -243,7 +237,7 @@ function Memories() {
                   memory.images && memory.images.length === 1 && (
                     <img
                       src={`data:image/png;base64,${memory.images[0]}`}
-                      alt={memory.name}
+                      alt="Memory image"
                       className="w-full h-auto"
                     />
                   )
@@ -253,9 +247,9 @@ function Memories() {
                     {memory.date}
                   </p>
                   
-                  {/* Section des commentaires */}
+                  {/* Comments section */}
                   <div className="mt-4 space-y-3">
-                    {memory.texts && memory.texts.slice(1).map((text) => (
+                    {memory.texts && memory.texts.map((text) => (
                       <div key={text.id} className="flex items-start space-x-3">
                         <img
                           src={getProfileImage(text.owner)}
@@ -272,7 +266,7 @@ function Memories() {
                     ))}
                   </div>
 
-                  {/* Champ d'ajout de commentaire */}
+                  {/* Add comment field */}
                   <div className="mt-4 flex items-center">
                     <input
                       type="text"
