@@ -32,18 +32,7 @@ const Sidebar = () => {
 <div className="flex flex-col py-8 space-y-1">
         <div className="px-6 mb-6">
         <div className="text-blue-800 font-bold text-4xl font-poppins">
-  Ech 
-  <span
-    className="text-3xl"
-    style={{
-      transform: 'rotate(-45deg)',
-      display: 'inline-block',
-      marginLeft: '2px',
-      textShadow: '4px 4px 8px rgba(0, 0, 0, 0.3)'
-    }}
-  >
-    🫧
-  </span>
+        <img src="echo_logo_f.svg" alt="Echo Logo"/>
 
 </div>
 
