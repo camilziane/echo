@@ -69,7 +69,7 @@ def get_random_memory():
 
     text_files = glob(f"{random_memory_path}/texts/*")
     if not text_files:
-        raise Exception("Aucun texte trouvé pour ce souvenir")
+        raise Exception("No text files found")
 
     with open(random.choice(text_files), "r") as f:
         random_text = f.read()
@@ -81,7 +81,7 @@ def generate_mcq(context: str) -> MCQuestion:
     parser = PydanticOutputParser(pydantic_object=MCQuestion)
 
     prompt = PromptTemplate(
-        template="Générez une question à choix multiples avec 4 options basée sur ce contexte.\n\nContexte : {context}\n\n{format_instructions}\n\nQuestion :",
+        template="Generate a multiple-choice question with 4 options based on this context.\n\nContext: {context}\n\n{format_instructions}\n\nQuestion:",
         input_variables=["context"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )

@@ -354,9 +354,7 @@ async def transcribe(audio: UploadFile = File(...)):
 
 
 @app.post("/memories/{memory_id}/texts", response_model=dict)
-def add_text_to_memory(
-    memory_id: int, text: str, user_id: int, text_uuid: Optional[str] = None
-):
+def add_text_to_memory(memory_id: int, text: str = Body(...), user_id: int = Body(...)):
     memory_dir = f"data/memories/{memory_id}"
     texts_dir = f"{memory_dir}/texts"
 
@@ -365,7 +363,7 @@ def add_text_to_memory(
 
     file_path = f"{texts_dir}/{user_id}.json"
     texts = {}
-    text_uuid = str(uuid.uuid4()) if text_uuid is None else text_uuid
+    text_uuid = str(uuid.uuid4())
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             texts = json.load(f)
@@ -376,7 +374,7 @@ def add_text_to_memory(
         json.dump(texts, f, indent=2)
 
     add_document(text)
-    return {"status": "Text added to memory"}
+    return {"status": "Text added to memory", "id": text_uuid}
 
 
 # Add this Pydantic model for quiz results
