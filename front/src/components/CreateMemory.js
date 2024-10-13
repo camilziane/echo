@@ -5,7 +5,6 @@ import ScrollReveal from 'scrollreveal';
 import { CircularProgress, Typography } from '@mui/material';
 
 const CreateMemory = () => {
-    const [location, setLocation] = useState('');
     const [text, setText] = useState('');
     const [images, setImages] = useState([]);
     const [isRecording, setIsRecording] = useState(false);
@@ -131,7 +130,6 @@ const CreateMemory = () => {
         // Create a data object instead of FormData
         const data = {
             owner: selectedProfileId,
-            location: location,
             text: text
         };
 
@@ -168,17 +166,6 @@ const CreateMemory = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label htmlFor="location" className="block text-sm font-medium text-blue-700 mb-2">Location</label>
-                                <input
-                                    type="text"
-                                    id="location"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    required
-                                />
-                            </div>
                             <div className="mb-4">
                                 <label htmlFor="text" className="block text-sm font-medium text-blue-700 mb-2">Text</label>
                                 <div className="flex items-center">

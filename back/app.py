@@ -59,7 +59,6 @@ class Text(BaseModel):
 
 class NewMemory(BaseModel):
     owner: int
-    location: str
     images: List[str] = []
     text: str
 
@@ -68,20 +67,9 @@ class Memory(BaseModel):
     id: int
     owner: int
     name: str
-    location: str
     date: str
     images: List[str]
     texts: List[Text]
-
-
-class MemoryPreview(BaseModel):
-    id: int
-    owner: int
-    name: str
-    location: str
-    date: str
-    end_date: str
-    image: str
 
 
 def get_profiles_data():
@@ -129,37 +117,11 @@ def get_memory_data(memory_id) -> Memory:
         id=memory_id,
         owner=metadata["owner"],
         name=metadata["name"],
-        location=metadata["location"],
         date=metadata["date"],
         images=encoded_images,
         texts=texts,
     )
     return memory
-
-
-def get_memory_preview(memory_id) -> MemoryPreview:
-    metadata = json.load(open(f"data/memories/{memory_id}/metadata.json"))
-    image_path = glob(f"data/memories/{memory_id}/images/*")[0]
-    with open(image_path, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
-    memory_preview = MemoryPreview(
-        id=memory_id,
-        owner=metadata["owner"],
-        name=metadata["name"],
-        location=metadata["location"],
-        date=metadata["date"],
-        end_date=metadata["end_date"],
-        image=encoded_image,
-    )
-    return memory_preview
-
-
-def get_memories_previews() -> List[MemoryPreview]:
-    memories_previews = []
-    for memory in glob("data/memories/*"):
-        memory_id = memory.split("/")[-1]
-        memories_previews.append(get_memory_preview(memory_id))
-    return memories_previews
 
 
 def get_memories_data() -> List[Memory]:
@@ -185,7 +147,6 @@ def create_memory(new_memory: NewMemory):
     metadata = {
         "owner": new_memory.owner,
         "name": name,
-        "location": new_memory.location,
         "date": datetime.now().strftime("%Y-%m-%d"),
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
