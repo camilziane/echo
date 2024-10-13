@@ -2,19 +2,20 @@ import random
 import json
 import os
 from glob import glob
-import pandas as pd
 import getpass
-from datetime import datetime
 from langchain_mistralai import ChatMistralAI
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
 from scipy.stats import beta
+from fastapi import APIRouter
+
 import uuid
+
+router = APIRouter()
 
 # Load environment variables
 load_dotenv()
@@ -24,17 +25,6 @@ if not os.getenv("MISTRAL_API_KEY"):
 
 llm = ChatMistralAI(model="mistral-small-latest")
 
-
-app = FastAPI()
-
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-)
 
 # Store generated questions
 quizs_path = "data/quizs.json"
@@ -103,8 +93,18 @@ def generate_mcq(context: str) -> MCQuestion:
     return parsed_output
 
 
-@app.get("/generate-random-quiz", response_model=Quiz)
+def save_quizs():
+    """save questions to a json file"""
+    serializable_quizs = {
+        question_id: quiz.dict() for question_id, quiz in quizs.items()
+    }
+    with open(quizs_path, "w") as f:
+        json.dump(serializable_quizs, f, indent=2)
+
+
+@router.get("/generate-random-quiz", response_model=Quiz)
 async def generate_random_quiz():
+    quizs = load_quizs()
     try:
         memory_id, _, random_text = get_random_memory()
 
@@ -131,8 +131,9 @@ async def generate_random_quiz():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/submit-answer")
+@router.post("/submit-answer")
 def submit_answer(question_id: str, success: bool):
+    quizs = load_quizs()
     if question_id not in quizs:
         raise HTTPException(status_code=404, detail="Question not found")
 
@@ -141,13 +142,11 @@ def submit_answer(question_id: str, success: bool):
         quiz.success += 1
     else:
         quiz.failure += 1
-
     save_quizs()
     return {"status": "Question updated"}
 
 
-@app.get("/generate-thompson-quiz", response_model=Quiz)
-def thompson_sampling_quiz_selection() -> Quiz:
+def thompson_sampling_quiz_selection(already_selected_quizes: list[uuid]) -> Quiz:
     quizs = load_quizs()
     if not quizs:
         return None
@@ -156,6 +155,8 @@ def thompson_sampling_quiz_selection() -> Quiz:
     selected_quiz = None
 
     for _, quiz in quizs.items():
+        if quiz.question_id in already_selected_quizes:
+            continue
         sample = beta.rvs(quiz.failure, quiz.success)
 
         if sample > max_score:
@@ -165,29 +166,25 @@ def thompson_sampling_quiz_selection() -> Quiz:
     return selected_quiz
 
 
-@app.get("/generate-quiz", response_model=Quiz)
-async def generate_quiz(epsilon: float = 0) -> Quiz:
-    """sample a random number if it is less than epsilon, return a random question, else return the best question"""
+@router.get("/generate-thompson-quiz", response_model=Quiz)
+def generate_thompson_quiz() -> Quiz:
+    return thompson_sampling_quiz_selection()
+
+
+@router.get("/generate-quiz", response_model=list[Quiz])
+async def generate_quiz(epsilon: float = 0, nb_quiz: int = 5):
     quizs = load_quizs()
     if not quizs:
         return None
-    
-    if random.random() < epsilon:
-        return await generate_random_quiz()
-    else:
-        return thompson_sampling_quiz_selection() 
 
-
-def save_quizs():
-    """save questions to a json file"""
-    serializable_quizs = {
-        question_id: quiz.dict() for question_id, quiz in quizs.items()
-    }
-    with open(quizs_path, "w") as f:
-        json.dump(serializable_quizs, f, indent=2)
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="localhost", port=8002)
+    generated_quizs = []
+    for _ in range(nb_quiz):
+        if random.random() < epsilon:
+            generated_quizs.append(await generate_random_quiz())
+        else:
+            quiz = thompson_sampling_quiz_selection(
+                [quiz.question_id for quiz in generated_quizs]
+            )
+            if quiz:
+                generated_quizs.append(quiz)
+    return generated_quizs
