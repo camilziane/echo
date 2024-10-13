@@ -1,224 +1,267 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { RemoteRunnable } from "@langchain/core/runnables/remote";
 import { Button, CircularProgress, Typography } from "@mui/material";
+import {
+  MicrophoneIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/outline";
+import ScrollReveal from "scrollreveal";
 
-// Création d'une instance RemoteRunnable pour communiquer avec le serveur LangServe
+// Create an instance of RemoteRunnable to communicate with the LangServe server
 const chain = new RemoteRunnable({ url: "http://localhost:8000/rag/c/N4XyA/" });
 
+const BotMessage = ({ content, id }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const indexRef = useRef(0);
+  const messageRef = useRef(null);
+
+  useEffect(() => {
+    // Reset displayed text and index for each new content
+    setDisplayedText("");
+    indexRef.current = 0;
+
+    const revealConfig = {
+      duration: 200, // Reduced duration for faster reveal
+      delay: 0,
+      distance: "20px",
+      easing: "ease-in-out",
+      origin: "left",
+    };
+
+    if (messageRef.current) {
+      ScrollReveal().reveal(messageRef.current, revealConfig);
+    }
+
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + content.charAt(indexRef.current));
+      indexRef.current += 1;
+      if (indexRef.current >= content.length) {
+        clearInterval(interval);
+      }
+    }, 20); // Reduced interval duration for faster text reveal
+
+    return () => clearInterval(interval);
+  }, [content]);
+
+  return (
+    <div
+      ref={messageRef}
+      className="inline-block p-3 rounded-lg bg-gray-200 text-blue-800"
+    >
+      {displayedText}
+    </div>
+  );
+};
+
 const Chatbot = () => {
-    const [messages, setMessages] = useState([
-        { role: "assistant", content: "Bonjour ! Comment puis-je vous aider aujourd'hui ?" },
-    ]);
-    const [input, setInput] = useState("");
-    const [isRecording, setIsRecording] = useState(false);
-    const [status, setStatus] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      id: Date.now(),
+      role: "assistant",
+      content: "Hello! How can I assist you today?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [status, setStatus] = useState("");
 
-    const speak = (text) => {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'fr-FR'; // Définir la langue à français
-            window.speechSynthesis.speak(utterance);
-        } else {
-            console.error("L'API Web Speech n'est pas supportée par ce navigateur.");
-        }
+  const speak = (text) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US"; // Set language to English
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.error("The Web Speech API is not supported by this browser.");
+    }
+  };
+
+  // Define refs
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const handleSend = async () => {
+    if (input.trim() === "") {
+      return;
+    }
+
+    const userMessage = {
+      id: Date.now() + 1, // Generate a unique ID
+      role: "human",
+      content: input,
     };
 
-    // Définir les refs
-    const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInput("");
 
-    const handleSend = async () => {
-        console.log("handleSend called with input:", input);
+    try {
+      // Invoke the LangServe chain with the message history
+      const response = await chain.invoke({
+        messages: messages.concat(userMessage),
+      });
 
-        if (input.trim() === "") {
-            console.log("Input is empty, returning.");
-            return;
-        }
+      speak(response.content);
 
-        const userMessage = { role: "human", content: input };
-        console.log("User message created:", userMessage);
+      // Add the bot's response to the message history
+      const botMessage = {
+        id: Date.now() + 2, // Generate a unique ID
+        role: "assistant",
+        content: response.content,
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    } catch (error) {
+      console.error("Error:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now() + 3,
+          role: "assistant",
+          content: "Sorry, an error occurred.",
+        },
+      ]);
+    }
+  };
 
-        setMessages((prevMessages) => {
-            const newMessages = [...prevMessages, userMessage];
-            console.log("Updated messages state:", newMessages);
-            return newMessages;
+  const toggleRecording = () => {
+    if (isRecording) {
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
+    } else {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          mediaRecorderRef.current.start();
+
+          setIsRecording(true);
+
+          mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
+            audioChunksRef.current.push(event.data);
+          });
+
+          mediaRecorderRef.current.addEventListener("stop", () => {
+            const audioBlob = new Blob(audioChunksRef.current, {
+              type: "audio/mp3",
+            });
+            sendAudioToServer(audioBlob);
+            audioChunksRef.current = [];
+          });
+        })
+        .catch((error) => {
+          console.error("Error accessing microphone:", error);
+          setStatus("Error accessing microphone.");
         });
+    }
+  };
 
-        setInput("");
-        console.log("Input cleared.");
+  const sendAudioToServer = async (audioBlob) => {
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.mp3");
 
-        try {
-            // Invocation de la chaîne LangServe avec l'historique des messages
-            console.log("Invoking chain with messages:", messages.concat(userMessage));
-            const response = await chain.invoke({
-                messages: messages.concat(userMessage),
-            });
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        controller.abort();
+        setStatus("Error: Timeout during transcription.");
+      }, 10000); // Stop the request after 10 seconds
 
-            console.log("Réponse reçue:", response.content);
-            speak(response.content);
-            // Ajout de la réponse du bot à l'historique des messages
-            setMessages((prevMessages) => {
-                const newMessages = [
-                    ...prevMessages,
-                    { role: response.role, content: response.content },
-                ];
-                console.log("Updated messages state with bot response:", newMessages);
-                return newMessages;
-            });
-        } catch (error) {
-            console.error("Erreur:", error);
-            setMessages((prevMessages) => {
-                const newMessages = [
-                    ...prevMessages,
-                    { role: "assistant", content: "Désolé, une erreur s'est produite." },
-                ];
-                console.log("Updated messages state with error message:", newMessages);
-                return newMessages;
-            });
-        }
-    };
+      const response = await fetch("http://localhost:8000/transcribe", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
 
-    const toggleRecording = () => {
-        if (isRecording) {
-            if (mediaRecorderRef.current) {
-                console.log("Arrêt de l'enregistrement...");
-                mediaRecorderRef.current.stop();
-            }
-            setIsRecording(false);
-        } else {
-            navigator.mediaDevices
-                .getUserMedia({ audio: true })
-                .then((stream) => {
-                    mediaRecorderRef.current = new MediaRecorder(stream);
-                    mediaRecorderRef.current.start();
+      clearTimeout(timeout); // Cancel the timeout if the response arrives before
 
-                    console.log("Enregistrement démarré...");
-                    setIsRecording(true);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-                    mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
-                        audioChunksRef.current.push(event.data);
-                        console.log("Données audio disponibles:", event.data);
-                    });
+      const data = await response.json();
 
-                    mediaRecorderRef.current.addEventListener("stop", () => {
-                        console.log("Enregistrement arrêté, envoi des données...");
-                        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/mp3" });
-                        sendAudioToServer(audioBlob);
-                        audioChunksRef.current = [];
-                    });
-                })
-                .catch((error) => {
-                    console.error("Erreur lors de l'accès au microphone:", error);
-                    setStatus("Erreur lors de l'accès au microphone.");
-                });
-        }
-    };
+      if (data.error) {
+        setStatus(`Error: ${data.error}`);
+      } else {
+        setInput(data.transcription);
+        setStatus("");
+      }
+    } catch (error) {
+      console.error("Error during transcription:", error);
+      if (error.name === "AbortError") {
+        setStatus("Error: The request was aborted due to a timeout.");
+      } else {
+        setStatus(`Error: ${error.message}`);
+      }
+    }
+  };
 
-    const sendAudioToServer = async (audioBlob) => {
-        console.log("Envoi de l'audio au serveur...");
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "recording.mp3");
-
-        try {
-            console.log("Début de la requête de transcription...");
-            const controller = new AbortController();
-            const timeout = setTimeout(() => {
-                controller.abort();
-                console.log("Temps écoulé, arrêt de la requête.");
-                setStatus("Erreur : temps écoulé lors de la transcription.");
-            }, 10000); // Arrête la requête après 10 secondes
-
-            const response = await fetch("http://localhost:8000/transcribe", {
-                method: "POST",
-                body: formData,
-                signal: controller.signal,
-            });
-
-            clearTimeout(timeout); // Annule le timeout si la réponse arrive avant
-            console.log(`Réponse reçue du serveur. Statut: ${response.status}`);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("Données de transcription reçues:", data);
-
-            if (data.error) {
-                setStatus(`Erreur : ${data.error}`);
-            } else {
-                setInput(data.transcription);
-                setStatus("");
-            }
-        } catch (error) {
-            console.error("Erreur lors de la transcription:", error);
-            if (error.name === 'AbortError') {
-                setStatus("Erreur : la requête a été annulée en raison d'un délai d'attente.");
-            } else {
-                setStatus(`Erreur : ${error.message}`);
-            }
-        }
-    };
-
-    return (
-        <div className="flex h-screen bg-gradient-to-b from-blue-100 to-white">
-            <Sidebar />
-            <div className="flex-1 p-4 ml-48">
-                <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
-                    <div className="flex-1 overflow-y-auto mb-4">
-                        {messages.map((message, index) => (
-                            <div
-                                key={index}
-                                className={`mb-4 ${message.role === "human" ? "text-right" : "text-left"}`}
-                            >
-                                <div
-                                    className={`inline-block p-3 rounded-lg ${
-                                        message.role === "human" ? "bg-blue-600 text-white" : "bg-gray-200 text-blue-800"
-                                    }`}
-                                >
-                                    {message.content}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                            placeholder="Tapez votre message..."
-                            className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                            onClick={toggleRecording}
-                            className={`bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                isRecording ? "bg-blue-700" : ""
-                            }`}
-                            style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                        >
-                            🎤
-                        </button>
-                        <button
-                            onClick={handleSend}
-                            className="bg-blue-600 text-white p-2 rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            Envoyer
-                        </button>
-                    </div>
-                    {status && (
-                        <div className="flex items-center justify-center mt-2">
-                            <CircularProgress size={20} style={{ marginRight: "10px" }} />
-                            <Typography variant="body1">{status}</Typography>
-                        </div>
-                    )}
-                </div>
+  return (
+    <div className="flex h-screen bg-gradient-to-b from-blue-100 to-white">
+      <Sidebar />
+      <div className="flex-1 p-4 ml-48">
+        <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
+          <div className="flex-1 overflow-y-auto mb-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`mb-4 ${
+                  message.role === "human" ? "text-right" : "text-left"
+                }`}
+              >
+                {message.role === "assistant" ? (
+                  <BotMessage content={message.content} id={message.id} />
+                ) : (
+                  <div className="inline-block p-3 rounded-lg bg-blue-600 text-white">
+                    {message.content}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Type your message..."
+              className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={toggleRecording}
+              className={`text-blue-600 p-2 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isRecording ? "text-blue-700" : ""
+              }`}
+              style={{
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MicrophoneIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleSend}
+              className="text-blue-600 p-2 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <PaperAirplaneIcon className="h-5 w-5" />
+            </button>
+          </div>
+          {status && (
+            <div className="flex items-center justify-center mt-2">
+              <CircularProgress size={20} style={{ marginRight: "10px" }} />
+              <Typography variant="body1">{status}</Typography>
             </div>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default Chatbot;
