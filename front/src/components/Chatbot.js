@@ -39,7 +39,7 @@ const BotMessage = ({ content, id }) => {
       if (indexRef.current >= content.length) {
         clearInterval(interval);
       }
-    }, 20); // Reduced interval duration for faster text reveal
+    }, 1); // Reduced interval duration for faster text reveal
 
     return () => clearInterval(interval);
   }, [content]);
