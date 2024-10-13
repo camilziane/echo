@@ -15,11 +15,7 @@ from fastapi import Body, HTTPException
 from quiz import router as quiz_router
 import uuid
 from quiz import *
-from rag import (
-    generate_title,
-    add_document,
-    router as rag_router,
-)
+from rag import generate_title, add_document, router as rag_router, preprocess_context
 import uuid
 
 # Add this at the beginning of your app.py file
@@ -180,6 +176,7 @@ def create_memory(new_memory: NewMemory):
         with open(f"{memory_dir}/images/image_{i+1}.png", "wb") as f:
             f.write(image_bytes)
 
+    add_document(new_memory.text)
     # Return the created memory
     return get_memory_data(new_memory_id)
 
@@ -346,6 +343,7 @@ def add_text_to_memory(memory_id: int, text: str = Body(...), user_id: int = Bod
         with open(file_path, "r") as f:
             texts = json.load(f)
 
+    
     texts[text_uuid] = text
 
     with open(file_path, "w") as f:
