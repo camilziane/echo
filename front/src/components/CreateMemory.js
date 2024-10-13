@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PhotographIcon, XIcon } from '@heroicons/react/solid';
 import { Button, CircularProgress, Typography } from "@mui/material";
@@ -14,30 +14,6 @@ const CreateMemory = () => {
     const [status, setStatus] = useState('');
 
     const navigate = useNavigate();
-
-    const fieldsRef = useRef([]);
-
-    useEffect(() => {
-        // Appliquer les animations ScrollReveal à chaque champ
-        fieldsRef.current.forEach((el, index) => {
-            if (el) {
-                ScrollReveal().reveal(el, {
-                    delay: index * 100,
-                    duration: 600,
-                    easing: 'ease-in-out',
-                    distance: '20px',
-                    origin: 'bottom',
-                    opacity: 0,
-                    reset: false,
-                });
-            }
-        });
-
-        // Nettoyer les animations lors du démontage du composant
-        return () => {
-            ScrollReveal().destroy();
-        };
-    }, []);
 
     const fieldsRef = useRef([]);
 
@@ -221,6 +197,7 @@ const CreateMemory = () => {
             }
         }
     };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex items-center justify-center">
             <div className="max-w-3xl w-full mx-auto p-4">
