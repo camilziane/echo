@@ -75,12 +75,30 @@ class Memory(BaseModel):
 def get_profiles_data():
     profiles = []
     for profile in glob("data/profiles/*"):
-        with open(profile, "rb") as image_file:
-            encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+        filename = os.path.basename(profile)  # Exemple: "1_john.png"
+        name_with_id, _ = os.path.splitext(filename)  # "1_john"
+        
+        try:
+            # Séparer l'ID et le nom
+            id_str, name = name_with_id.split("_", 1)  # "1", "john"
+            profile_id = int(id_str)  # Convertir l'ID en entier
+        except ValueError:
+            print(f"Le fichier '{filename}' ne correspond pas au format 'id_name.ext'")
+            continue  # Passer au profil suivant si le format est incorrect
+        
+        try:
+            # Lire et encoder l'image en base64
+            with open(profile, "rb") as image_file:
+                encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture du fichier '{profile}': {e}")
+            continue  # Passer au profil suivant en cas d'erreur de lecture
+        
+        # Ajouter le profil avec l'ID et le nom corrects
         profiles.append(
             {
-                "id": len(profiles) + 1,
-                "name": profile.split("/")[-1].split(".")[0],
+                "id": profile_id,
+                "name": name,
                 "image": encoded_image,
             }
         )
