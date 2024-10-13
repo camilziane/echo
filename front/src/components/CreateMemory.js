@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PhotographIcon, XIcon } from '@heroicons/react/solid';
+import { PhotographIcon, XIcon, MicrophoneIcon } from '@heroicons/react/solid';
 import ScrollReveal from 'scrollreveal';
+import { CircularProgress, Typography } from '@mui/material';
 
 const CreateMemory = () => {
     const [location, setLocation] = useState('');
     const [text, setText] = useState('');
     const [images, setImages] = useState([]);
+    const [isRecording, setIsRecording] = useState(false);
+    const [status, setStatus] = useState("");
 
     const navigate = useNavigate();
     const fieldsRef = useRef([]);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
 
     useEffect(() => {
         const sr = ScrollReveal({
@@ -35,6 +40,82 @@ const CreateMemory = () => {
     const handleImageUpload = (event) => {
         const files = Array.from(event.target.files);
         setImages([...images, ...files]);
+    };
+
+    const toggleRecording = () => {
+        if (isRecording) {
+            if (mediaRecorderRef.current) {
+                mediaRecorderRef.current.stop();
+            }
+            setIsRecording(false);
+        } else {
+            navigator.mediaDevices
+                .getUserMedia({ audio: true })
+                .then((stream) => {
+                    mediaRecorderRef.current = new MediaRecorder(stream);
+                    mediaRecorderRef.current.start();
+
+                    setIsRecording(true);
+
+                    mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
+                        audioChunksRef.current.push(event.data);
+                    });
+
+                    mediaRecorderRef.current.addEventListener("stop", () => {
+                        const audioBlob = new Blob(audioChunksRef.current, {
+                            type: "audio/mp3",
+                        });
+                        sendAudioToServer(audioBlob);
+                        audioChunksRef.current = [];
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error accessing microphone:", error);
+                    setStatus("Error accessing microphone.");
+                });
+        }
+    };
+
+    const sendAudioToServer = async (audioBlob) => {
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.mp3");
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => {
+                controller.abort();
+                setStatus("Error: Timeout during transcription.");
+            }, 10000); // Stop the request after 10 seconds
+
+            const response = await fetch("http://localhost:8000/transcribe", {
+                method: "POST",
+                body: formData,
+                signal: controller.signal,
+            });
+
+            clearTimeout(timeout); // Cancel the timeout if the response arrives before
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                setStatus(`Error: ${data.error}`);
+            } else {
+                setText(data.transcription);
+                setStatus("");
+            }
+        } catch (error) {
+            console.error("Error during transcription:", error);
+            if (error.name === "AbortError") {
+                setStatus("Error: The request was aborted due to a timeout.");
+            } else {
+                setStatus(`Error: ${error.message}`);
+            }
+        }
     };
 
     const handleSubmit = async (event) => {
@@ -70,7 +151,6 @@ const CreateMemory = () => {
             console.error('Error creating memory:', error);
         }
     };
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex items-center justify-center">
             <div className="max-w-3xl w-full mx-auto p-4">
@@ -99,15 +179,38 @@ const CreateMemory = () => {
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="text" className="block text-sm font-medium text-blue-700 mb-2">Text</label>
-                                <textarea
-                                    id="text"
-                                    rows="4"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-blue-300 rounded-md p-2"
-                                    placeholder="Describe your memory..."
-                                    value={text}
-                                    onChange={(e) => setText(e.target.value)}
-                                    required
-                                ></textarea>
+                                <div className="flex items-center">
+                                    <textarea
+                                        id="text"
+                                        rows="4"
+                                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-blue-300 rounded-md p-2"
+                                        placeholder="Describe your memory..."
+                                        value={text}
+                                        onChange={(e) => setText(e.target.value)}
+                                    ></textarea>
+                                    <button
+                                        type="button"
+                                        onClick={toggleRecording}
+                                        className={`ml-2 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                            isRecording ? "bg-blue-200 text-blue-800" : "bg-white text-blue-600"
+                                        }`}
+                                        style={{
+                                            width: "40px",
+                                            height: "40px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <MicrophoneIcon className="h-5 w-5" />
+                                    </button>
+                                </div>
+                                {status && (
+                                    <div className="flex items-center justify-center mt-2">
+                                        <CircularProgress size={20} style={{ marginRight: "10px" }} />
+                                        <Typography variant="body1">{status}</Typography>
+                                    </div>
+                                )}
                             </div>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-blue-700 mb-2">Upload Images</label>
