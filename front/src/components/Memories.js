@@ -134,8 +134,8 @@ function Memories() {
   }, [newComments]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
-      <Sidebar />
+<div className="flex min-h-screen bg-gradient-to-br from-blue-400 via-indigo-300 to-white">
+<Sidebar />
 
       {/* Contenu principal */}
       <div className={`flex-1 ${isCreateMemoryPage ? '' : 'ml-48'}`}>
@@ -216,14 +216,14 @@ function Memories() {
                     infiniteLoop={true}
                     renderArrowPrev={(onClickHandler, hasPrev, label) =>
                       hasPrev && (
-                        <button type="button" onClick={onClickHandler} title={label} className="absolute left-0 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
+                        <button type="button" onClick={onClickHandler} title={label} className="absolute left-4 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
                           <ChevronLeftIcon className="h-6 w-6 text-blue-800" />
                         </button>
                       )
                     }
                     renderArrowNext={(onClickHandler, hasNext, label) =>
                       hasNext && (
-                        <button type="button" onClick={onClickHandler} title={label} className="absolute right-0 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
+                        <button type="button" onClick={onClickHandler} title={label} className="absolute right-4 top-1/2 z-10 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all duration-200">
                           <ChevronRightIcon className="h-6 w-6 text-blue-800" />
                         </button>
                       )

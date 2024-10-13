@@ -47,8 +47,7 @@ const BotMessage = ({ content, id }) => {
   return (
     <div
       ref={messageRef}
-      className="inline-block p-3 rounded-lg bg-gray-200 text-blue-800"
-    >
+      className="inline-block p-4 m-4 rounded-lg bg-gray-200 text-blue-800 text-xl shadow-lg border border-gray-300 transition-transform transform hover:scale-105"    >
       {displayedText}
     </div>
   );
@@ -202,7 +201,7 @@ const Chatbot = () => {
     <div className="flex h-screen bg-gradient-to-b from-blue-100 to-white">
       <Sidebar />
       <div className="flex-1 p-4 ml-48">
-        <div className="bg-white rounded-lg shadow-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
+        <div className=" bg-gradient-to-r from-blue-400 via-indigo-300 to-white text-blue-800 rounded-lg shadow-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
           <div className="flex-1 overflow-y-auto mb-4">
             {messages.map((message) => (
               <div
@@ -214,22 +213,23 @@ const Chatbot = () => {
                 {message.role === "assistant" ? (
                   <BotMessage content={message.content} id={message.id} />
                 ) : (
-                  <div className="inline-block p-3 rounded-lg bg-blue-600 text-white">
-                    {message.content}
+<div className="inline-block p-4 m-4 rounded-lg bg-blue-600 text-white text-xl shadow-lg border border-gray-300 transition-transform transform hover:scale-105">
+{message.content}
                   </div>
                 )}
               </div>
             ))}
           </div>
           <div className="flex items-center">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Type your message..."
-              className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <input
+  type="text"
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  onKeyPress={(e) => e.key === "Enter" && handleSend()}
+  placeholder="Type your message..."
+  className="flex-1 p-3 border border-transparent rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-md transition duration-300 ease-in-out hover:shadow-lg placeholder-gray-500"
+/>
+
             <button
               onClick={toggleRecording}
               className={`text-blue-600 p-2 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${

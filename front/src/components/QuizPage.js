@@ -70,7 +70,7 @@ const QuizPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
+        <div className="flex min-h-screen bg-gradient-to-r from-blue-400 via-indigo-300 to-white text-blue-800">
             <Sidebar />
 
             {/* Main content */}
