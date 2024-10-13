@@ -96,8 +96,11 @@ def init_vectorstore_from_memories():
                                 documents.append(doc)
     vdb["vectorstore"].add_documents(documents)
     vdb["retriever"] = vdb["vectorstore"].as_retriever()
+    print(f"Vector store initialized with {len(documents)} documents")
     return {"status": f"Vector store initialized with {len(documents)} documents"}
 
+reset_vectorstore()
+init_vectorstore_from_memories()
 
 # Set up the LLM
 llm = ChatMistralAI(model="mistral-small-latest")
