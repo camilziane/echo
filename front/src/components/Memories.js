@@ -68,7 +68,7 @@ function Memories() {
   }, [memories]);
 
   const handleCardClick = (memory) => {
-    navigate(`/memory/${memory.id}`, { state: { memory } });
+    // navigate(`/memory/${memory.id}`, { state: { memory } });
   };
 
   const handleAddMemory = () => {
