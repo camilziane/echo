@@ -7,7 +7,10 @@ import Chatbot from './components/Chatbot';
 import CreateMemory from './components/CreateMemory';
 import QuizPage from './components/QuizPage';
 import QuizSlideshow from './components/QuizSlideShow';
+import SemanticGraphPage from './components/SemanticGraphPage';  
 import './App.css';
+
+
 
 function App() {
   return (
@@ -21,6 +24,7 @@ function App() {
           <Route path="/create-memory" element={<CreateMemory />} />
           <Route path="/quiz-home" element={<QuizPage />} />
           <Route path="/quiz" element={<QuizSlideshow />} />
+          <Route path="/graph" element={<SemanticGraphPage />} />
         </Routes>
       </div>
     </Router>

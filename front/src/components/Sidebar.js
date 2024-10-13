@@ -4,12 +4,14 @@ import {
   HomeIcon, 
   QuestionMarkCircleIcon, 
   PlusIcon,
-  SparklesIcon
+  SparklesIcon,
+  ChartBarIcon
 } from '@heroicons/react/outline';
 import { 
   HomeIcon as HomeIconSolid, 
   QuestionMarkCircleIcon as QuestionMarkCircleIconSolid, 
-  PlusIcon as PlusIconSolid
+  PlusIcon as PlusIconSolid,
+  ChartBarIcon as ChartBarIconSolid
 } from '@heroicons/react/solid';
 
 const Sidebar = () => {
@@ -62,6 +64,14 @@ const Sidebar = () => {
         >
           {isActive('/create-memory') ? <PlusIconSolid className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
           <span className="text-sm">Create</span>
+        </Link>
+        <Link
+          ref={el => linksRef.current[4] = el}
+          to="/semantic-graph"
+          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/semantic-graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
+        >
+          {isActive('/semantic-graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
+          <span className="text-sm">Semantic Graph</span>
         </Link>
       </div>
     </div>
