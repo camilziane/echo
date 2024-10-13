@@ -15,11 +15,7 @@ from fastapi import Body, HTTPException
 from quiz import router as quiz_router
 import uuid
 from quiz import *
-from rag import (
-    generate_title,
-    add_document,
-    router as rag_router,
-)
+from rag import generate_title, add_document, router as rag_router, preprocess_context
 import uuid
 
 # Add this at the beginning of your app.py file
@@ -44,6 +40,26 @@ app.add_middleware(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+profiles = {}
+def get_profiles_id():
+    for profile in glob("data/profiles/*"):
+        filename = os.path.basename(profile)  # Exemple: "1_john.png"
+        name_with_id, _ = os.path.splitext(filename)  # "1_john"
+
+        try:
+            # Séparer l'ID et le nom
+            id_str, name = name_with_id.split("_", 1)  # "1", "john"
+            profile_id = int(id_str)  # Convertir l'ID en entier
+        except ValueError:
+            print(f"Le fichier '{filename}' ne correspond pas au format 'id_name.ext'")
+            continue  # Passer au profil suivant si le format est incorrect
+
+        profiles[profile_id] = name.split(" ")[0]
+    return profiles
+
+get_profiles_id()
+print(profiles)
 
 # Modèle Pydantic pour représenter un profil
 class Profile(BaseModel):
@@ -164,12 +180,13 @@ def create_memory(new_memory: NewMemory):
     os.makedirs(f"{memory_dir}/texts", exist_ok=True)
 
     name = generate_title(new_memory.text)
+    description = preprocess_context(profiles[new_memory.owner] , new_memory.text)
     # Save metadata
     metadata = {
         "owner": new_memory.owner,
         "name": name,
         "date": datetime.now().strftime("%Y-%m-%d"),
-        "description": new_memory.text,
+        "description": description,
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
         json.dump(metadata, f)
@@ -180,6 +197,7 @@ def create_memory(new_memory: NewMemory):
         with open(f"{memory_dir}/images/image_{i+1}.png", "wb") as f:
             f.write(image_bytes)
 
+    add_document(new_memory.text)
     # Return the created memory
     return get_memory_data(new_memory_id)
 
@@ -346,6 +364,7 @@ def add_text_to_memory(memory_id: int, text: str = Body(...), user_id: int = Bod
         with open(file_path, "r") as f:
             texts = json.load(f)
 
+    
     texts[text_uuid] = text
 
     with open(file_path, "w") as f:

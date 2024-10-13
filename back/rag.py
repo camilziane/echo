@@ -84,6 +84,12 @@ def init_vectorstore_from_memories():
     for memory_folder in os.listdir(memories_dir):
         memory_path = os.path.join(memories_dir, memory_folder)
         if os.path.isdir(memory_path):
+            metadata_file = os.path.join(memory_path, "metadata.json")
+            if os.path.exists(metadata_file):
+                with open(metadata_file, "r") as file:
+                    metadata = json.load(file)
+                    description = metadata.get("description", "")
+                    documents.append(Document(description))
             texts_folder = os.path.join(memory_path, "texts")
             if os.path.exists(texts_folder):
                 for filename in os.listdir(texts_folder):
@@ -98,6 +104,7 @@ def init_vectorstore_from_memories():
     vdb["retriever"] = vdb["vectorstore"].as_retriever()
     print(f"Vector store initialized with {len(documents)} documents")
     return {"status": f"Vector store initialized with {len(documents)} documents"}
+
 
 reset_vectorstore()
 init_vectorstore_from_memories()
@@ -165,7 +172,6 @@ class Title(BaseModel):
     title: str = Field(description="The generated title for the text")
 
 
-
 def generate_title(text: str) -> str:
     """
     Generate a title for the given text using a language model.
@@ -180,7 +186,9 @@ def generate_title(text: str) -> str:
     parser = PydanticOutputParser(pydantic_object=Title)
 
     messages = [
-        HumanMessage(content=f"Generate a concise and engaging title for the following text:\n\n{text}\n\n{parser.get_format_instructions()}")
+        HumanMessage(
+            content=f"Generate a concise and engaging title for the following text:\n\n{text}\n\n{parser.get_format_instructions()}"
+        )
     ]
 
     response = llm.predict_messages(messages)
@@ -197,6 +205,21 @@ def generate_title(text: str) -> str:
     except Exception as e:
         print(f"Error parsing response: {e}")
         return ""
+
+
+def preprocess_context(name: str, sentence: str) -> str:
+    """
+    Replace first-person pronouns and possessive determiners with the provided name.
+    """
+    prompt = (
+        f"My name is {name}.\n"
+        "Instructions: Replace all first-person personal pronouns and possessive determiners with "
+        f"**{name}'s** in the following sentence. "
+        f"If a third-person pronoun refers to {name}, replace it with explicit wording. For example, replace 'his friend' with '{name}'s friend.'\n"
+        "Return only the modified sentence without any explanations or additional text.\n"
+        f"Sentence to modify:\n{sentence}"
+    )
+    return llm.invoke(prompt).content.strip()
 
 
 # Add these routes to the router
