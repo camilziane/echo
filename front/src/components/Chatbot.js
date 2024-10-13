@@ -47,7 +47,7 @@ const BotMessage = ({ content, id }) => {
   return (
     <div
       ref={messageRef}
-      className="inline-block p-4 m-4 rounded-lg bg-gray-200 text-blue-800 text-xl shadow-lg border border-gray-300 transition-transform transform hover:scale-105"    >
+      className="inline-block p-4 m-4 rounded-lg bg-gray-50 text-blue-800 text-xl shadow-lg transition-transform transform hover:scale-105"    >
       {displayedText}
     </div>
   );
@@ -196,12 +196,13 @@ const Chatbot = () => {
       }
     }
   };
+  
 
   return (
     <div className="flex h-screen bg-gradient-to-b from-blue-100 to-white">
       <Sidebar />
       <div className="flex-1 p-4 ml-48">
-        <div className=" bg-gradient-to-r from-blue-400 via-indigo-300 to-white text-blue-800 rounded-lg shadow-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
+        <div className=" bg-gradient-to-b from-blue-100 to-white text-blue-800 rounded-lg p-4 h-[calc(100vh-2rem)] flex flex-col">
           <div className="flex-1 overflow-y-auto mb-4">
             {messages.map((message) => (
               <div

@@ -70,6 +70,7 @@ class Memory(BaseModel):
     date: str
     images: List[str]
     texts: List[Text]
+    description: str
 
 
 def get_profiles_data():
@@ -137,6 +138,7 @@ def get_memory_data(memory_id) -> Memory:
         name=metadata["name"],
         date=metadata["date"],
         images=encoded_images,
+        description="Description processing by camz",
         texts=texts,
     )
     return memory
