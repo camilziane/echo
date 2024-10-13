@@ -12,13 +12,14 @@ from dotenv import load_dotenv
 import logging
 from datetime import datetime
 from fastapi import Body, HTTPException
-from rag import router as rag_router
 from quiz import router as quiz_router
-from rag import add_document
-from typing import Optional
 import uuid
 from quiz import *
-from rag import generate_title
+from rag import (
+    generate_title,
+    add_document,
+    router as rag_router,
+)
 import uuid
 
 # Add this at the beginning of your app.py file
@@ -78,7 +79,7 @@ def get_profiles_data():
     for profile in glob("data/profiles/*"):
         filename = os.path.basename(profile)  # Exemple: "1_john.png"
         name_with_id, _ = os.path.splitext(filename)  # "1_john"
-        
+
         try:
             # Séparer l'ID et le nom
             id_str, name = name_with_id.split("_", 1)  # "1", "john"
@@ -86,7 +87,7 @@ def get_profiles_data():
         except ValueError:
             print(f"Le fichier '{filename}' ne correspond pas au format 'id_name.ext'")
             continue  # Passer au profil suivant si le format est incorrect
-        
+
         try:
             # Lire et encoder l'image en base64
             with open(profile, "rb") as image_file:
@@ -94,7 +95,7 @@ def get_profiles_data():
         except Exception as e:
             print(f"Erreur lors de l'ouverture du fichier '{profile}': {e}")
             continue  # Passer au profil suivant en cas d'erreur de lecture
-        
+
         # Ajouter le profil avec l'ID et le nom corrects
         profiles.append(
             {
