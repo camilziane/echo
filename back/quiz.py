@@ -69,11 +69,11 @@ def get_random_memory():
 
     text_files = glob(f"{random_memory_path}/texts/*")
     if not text_files:
-        raise Exception("No text files found")
+        return memory_id, metadata, metadata["description"]
 
     with open(random.choice(text_files), "r") as f:
         random_text = f.read()
-
+    random.choices([random_text, metadata["description"]])
     return memory_id, metadata, random_text
 
 
@@ -93,7 +93,7 @@ def generate_mcq(context: str) -> MCQuestion:
     return parsed_output
 
 
-def save_quizs():
+def save_quizs(quizs):
     """save questions to a json file"""
     serializable_quizs = {
         question_id: quiz.dict() for question_id, quiz in quizs.items()
@@ -124,7 +124,7 @@ async def generate_random_quiz():
         )
 
         quizs[question_id] = question_response
-        save_quizs()
+        save_quizs(quizs)
         return question_response
 
     except Exception as e:
