@@ -163,7 +163,7 @@ const CreateMemory = () => {
     };
 
     return (
-        <div className="min-h-screen  bg-gradient-to-r from-blue-400 via-indigo-300 to-white text-blue-800 flex items-center justify-center">
+        <div className="min-h-screen  bg-gradient-to-b from-blue-100 to-white text-blue-800 flex items-center justify-center">
             <div className="max-w-3xl w-full mx-auto p-4">
                 <div className="bg-white rounded-lg overflow-hidden shadow-lg">
                     <div className="p-6">

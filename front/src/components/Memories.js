@@ -134,7 +134,7 @@ function Memories() {
   }, [newComments]);
 
   return (
-<div className="flex min-h-screen bg-gradient-to-br from-blue-400 via-indigo-300 to-white">
+<div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
 <Sidebar />
 
       {/* Contenu principal */}
