@@ -119,15 +119,14 @@ const CreateMemory = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         const selectedProfileId = localStorage.getItem('selectedProfileId');
         console.log("selectedProfileId", selectedProfileId);
         if (!selectedProfileId) {
-            console.error('Aucun profil sélectionné');
+            console.error('No profile selected');
             return;
         }
 
-        // Create a data object instead of FormData
         const data = {
             owner: selectedProfileId,
             text: text
@@ -151,13 +150,15 @@ const CreateMemory = () => {
             console.error('Error creating memory:', error);
         }
     };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex items-center justify-center">
             <div className="max-w-3xl w-full mx-auto p-4">
                 <div className="bg-white rounded-lg overflow-hidden shadow-lg">
                     <div className="p-6">
+                        {/* Header */}
                         <div className="flex justify-between items-center mb-6" ref={el => fieldsRef.current[0] = el}>
-                            <h2 className="text-2xl font-semibold text-blue-800">Créer une Nouvelle Mémoire</h2>
+                            <h2 className="text-2xl font-semibold text-blue-800">Create a new memory</h2>
                             <button
                                 onClick={() => navigate('/memories')}
                                 className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
@@ -166,7 +167,8 @@ const CreateMemory = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
+                            {/* Text Field */}
+                            <div className="mb-4" ref={el => fieldsRef.current[1] = el}>
                                 <label htmlFor="text" className="block text-sm font-medium text-blue-700 mb-2">Text</label>
                                 <div className="flex items-center">
                                     <textarea
@@ -201,7 +203,8 @@ const CreateMemory = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="mb-6">
+                            {/* Image Upload */}
+                            <div className="mb-6" ref={el => fieldsRef.current[2] = el}>
                                 <label className="block text-sm font-medium text-blue-700 mb-2">Upload Images</label>
                                 <div className="mt-1 flex items-center">
                                     <label htmlFor="file-upload" className="cursor-pointer bg-white py-2 px-3 border border-blue-300 rounded-md shadow-sm text-sm leading-4 font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -217,11 +220,12 @@ const CreateMemory = () => {
                                         onChange={handleImageUpload}
                                     />
                                     <span className="ml-3 text-sm text-blue-500">
-                                        {images.length} {images.length === 1 ? 'image' : 'images'} selected
+                                        {images.length} {images.length === 1 ? 'image selected' : 'images selected'}
                                     </span>
                                 </div>
                             </div>
-                            <div className="flex justify-between">
+                            {/* Action Buttons */}
+                            <div className="flex justify-between" ref={el => fieldsRef.current[3] = el}>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/memories')}
@@ -233,7 +237,7 @@ const CreateMemory = () => {
                                     type="submit"
                                     className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                 >
-                                    Create Memory
+                                    Create the memory
                                 </button>
                             </div>
                         </form>
