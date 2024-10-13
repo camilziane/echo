@@ -41,6 +41,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+profiles = {}
+def get_profiles_id():
+    for profile in glob("data/profiles/*"):
+        filename = os.path.basename(profile)  # Exemple: "1_john.png"
+        name_with_id, _ = os.path.splitext(filename)  # "1_john"
+
+        try:
+            # Séparer l'ID et le nom
+            id_str, name = name_with_id.split("_", 1)  # "1", "john"
+            profile_id = int(id_str)  # Convertir l'ID en entier
+        except ValueError:
+            print(f"Le fichier '{filename}' ne correspond pas au format 'id_name.ext'")
+            continue  # Passer au profil suivant si le format est incorrect
+
+        profiles[profile_id] = name.split(" ")[0]
+    return profiles
+
+get_profiles_id()
+print(profiles)
+
 # Modèle Pydantic pour représenter un profil
 class Profile(BaseModel):
     id: int
@@ -160,12 +180,13 @@ def create_memory(new_memory: NewMemory):
     os.makedirs(f"{memory_dir}/texts", exist_ok=True)
 
     name = generate_title(new_memory.text)
+    description = preprocess_context(profiles[new_memory.owner] , new_memory.text)
     # Save metadata
     metadata = {
         "owner": new_memory.owner,
         "name": name,
         "date": datetime.now().strftime("%Y-%m-%d"),
-        "description": new_memory.text,
+        "description": description,
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
         json.dump(metadata, f)
