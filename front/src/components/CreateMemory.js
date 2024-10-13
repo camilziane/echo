@@ -4,9 +4,7 @@ import { PhotographIcon, XIcon } from '@heroicons/react/solid';
 import { Button, CircularProgress, Typography } from "@mui/material";
 
 const CreateMemory = () => {
-    const [name, setName] = useState('');
     const [location, setLocation] = useState('');
-    const [date, setDate] = useState('');
     const [text, setText] = useState('');
     const [images, setImages] = useState([]);
     const [isRecording, setIsRecording] = useState(false);
@@ -54,9 +52,7 @@ const CreateMemory = () => {
 
         const newMemory = {
             owner: parseInt(selectedProfileId, 10),
-            name,
             location,
-            date,
             images,
             text
         };
@@ -188,17 +184,6 @@ const CreateMemory = () => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
-                                <label htmlFor="name" className="block text-sm font-medium text-blue-700 mb-2">Nom</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
                                 <label htmlFor="location" className="block text-sm font-medium text-blue-700 mb-2">Lieu</label>
                                 <input
                                     type="text"
@@ -206,17 +191,6 @@ const CreateMemory = () => {
                                     className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="date" className="block text-sm font-medium text-blue-700 mb-2">Date</label>
-                                <input
-                                    type="date"
-                                    id="date"
-                                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
                                     required
                                 />
                             </div>

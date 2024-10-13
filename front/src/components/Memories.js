@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { 
@@ -14,6 +14,7 @@ import Sidebar from './Sidebar';
 function Memories() {
   const [memories, setMemories] = useState([]);
   const [profiles, setProfiles] = useState([]);
+  const [newComments, setNewComments] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,11 +23,7 @@ function Memories() {
     console.log("currentProfileId", currentProfileId);
     fetch('http://localhost:8000/memories')
       .then(response => response.json())
-      .then(data => {
-        // Sort memories by id in descending order
-        const sortedMemories = data.sort((a, b) => b.id - a.id);
-        setMemories(sortedMemories);
-      });
+      .then(data => setMemories(data));
 
     fetch('http://localhost:8000/profiles')
       .then(response => response.json())
@@ -67,6 +64,50 @@ function Memories() {
     const profile = profiles.find(p => p.id === userId);
     return profile ? profile.name : 'Unknown User';
   };
+
+  const handleAddComment = useCallback(async (memoryId, userId) => {
+    const commentText = newComments[memoryId];
+    if (!commentText) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/memories/${memoryId}/texts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: commentText,
+          user_id: parseInt(userId),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      const result = await response.json();
+
+      // Update the local state with the new comment
+      setMemories(prevMemories => 
+        prevMemories.map(memory => 
+          memory.id === memoryId
+            ? {
+                ...memory,
+                texts: [
+                  ...memory.texts,
+                  { owner: parseInt(userId), id: result.id, text: commentText }
+                ]
+              }
+            : memory
+        )
+      );
+
+      // Clear the input field
+      setNewComments(prev => ({ ...prev, [memoryId]: '' }));
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  }, [newComments]);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-blue-100 to-white">
@@ -186,13 +227,13 @@ function Memories() {
                     {memory.texts && memory.texts.slice(1).map((text) => (
                       <div key={text.id} className="flex items-start space-x-3">
                         <img
-                          src={getProfileImage(text.id)}
-                          alt={getNameForId(text.id)}
+                          src={getProfileImage(text.owner)}
+                          alt={getNameForId(text.owner)}
                           className="w-8 h-8 rounded-full object-cover"
                         />
                         <div className="flex-1">
                           <p className="text-sm">
-                            <span className="font-semibold text-blue-800">{getNameForId(text.id)}</span>{' '}
+                            <span className="font-semibold text-blue-800">{getNameForId(text.owner)}</span>{' '}
                             <span className="text-blue-600">{text.text}</span>
                           </p>
                         </div>
@@ -205,9 +246,16 @@ function Memories() {
                     <input
                       type="text"
                       placeholder="Add a comment..."
+                      value={newComments[memory.id] || ''}
+                      onChange={(e) => setNewComments(prev => ({ ...prev, [memory.id]: e.target.value }))}
                       className="flex-1 border-none bg-gray-100 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button className="ml-2 text-blue-500 font-semibold">Post</button>
+                    <button 
+                      onClick={() => handleAddComment(memory.id, localStorage.getItem('selectedProfileId'))}
+                      className="ml-2 text-blue-500 font-semibold"
+                    >
+                      Post
+                    </button>
                   </div>
                 </div>
               </div>
