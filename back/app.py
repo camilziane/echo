@@ -18,6 +18,7 @@ from rag import add_document
 from typing import Optional
 import uuid
 from quiz import *
+from rag import generate_title
 import uuid
 
 # Add this at the beginning of your app.py file
@@ -58,10 +59,7 @@ class Text(BaseModel):
 
 class NewMemory(BaseModel):
     owner: int
-    name: str
-    location: str
-    date: str
-    images: List[str]
+    images: List[str] = []
     text: str
 
 
@@ -69,31 +67,39 @@ class Memory(BaseModel):
     id: int
     owner: int
     name: str
-    location: str
     date: str
     images: List[str]
     texts: List[Text]
-
-
-class MemoryPreview(BaseModel):
-    id: int
-    owner: int
-    name: str
-    location: str
-    date: str
-    end_date: str
-    image: str
+    description: str
 
 
 def get_profiles_data():
     profiles = []
-    for profile in glob("data/profiles/*.png"):
-        with open(profile, "rb") as image_file:
-            encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+    for profile in glob("data/profiles/*"):
+        filename = os.path.basename(profile)  # Exemple: "1_john.png"
+        name_with_id, _ = os.path.splitext(filename)  # "1_john"
+        
+        try:
+            # Séparer l'ID et le nom
+            id_str, name = name_with_id.split("_", 1)  # "1", "john"
+            profile_id = int(id_str)  # Convertir l'ID en entier
+        except ValueError:
+            print(f"Le fichier '{filename}' ne correspond pas au format 'id_name.ext'")
+            continue  # Passer au profil suivant si le format est incorrect
+        
+        try:
+            # Lire et encoder l'image en base64
+            with open(profile, "rb") as image_file:
+                encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture du fichier '{profile}': {e}")
+            continue  # Passer au profil suivant en cas d'erreur de lecture
+        
+        # Ajouter le profil avec l'ID et le nom corrects
         profiles.append(
             {
-                "id": len(profiles) + 1,
-                "name": profile.split("/")[-1].split(".")[0],
+                "id": profile_id,
+                "name": name,
                 "image": encoded_image,
             }
         )
@@ -130,37 +136,12 @@ def get_memory_data(memory_id) -> Memory:
         id=memory_id,
         owner=metadata["owner"],
         name=metadata["name"],
-        location=metadata["location"],
         date=metadata["date"],
         images=encoded_images,
+        description=metadata["description"],
         texts=texts,
     )
     return memory
-
-
-def get_memory_preview(memory_id) -> MemoryPreview:
-    metadata = json.load(open(f"data/memories/{memory_id}/metadata.json"))
-    image_path = glob(f"data/memories/{memory_id}/images/*")[0]
-    with open(image_path, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
-    memory_preview = MemoryPreview(
-        id=memory_id,
-        owner=metadata["owner"],
-        name=metadata["name"],
-        location=metadata["location"],
-        date=metadata["date"],
-        end_date=metadata["end_date"],
-        image=encoded_image,
-    )
-    return memory_preview
-
-
-def get_memories_previews() -> List[MemoryPreview]:
-    memories_previews = []
-    for memory in glob("data/memories/*"):
-        memory_id = memory.split("/")[-1]
-        memories_previews.append(get_memory_preview(memory_id))
-    return memories_previews
 
 
 def get_memories_data() -> List[Memory]:
@@ -181,12 +162,13 @@ def create_memory(new_memory: NewMemory):
     os.makedirs(f"{memory_dir}/images", exist_ok=True)
     os.makedirs(f"{memory_dir}/texts", exist_ok=True)
 
+    name = generate_title(new_memory.text)
     # Save metadata
     metadata = {
         "owner": new_memory.owner,
-        "name": new_memory.name,
-        "location": new_memory.location,
-        "date": new_memory.date,
+        "name": name,
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "description": new_memory.text,
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
         json.dump(metadata, f)
@@ -196,11 +178,6 @@ def create_memory(new_memory: NewMemory):
         image_bytes = base64.b64decode(image_data)
         with open(f"{memory_dir}/images/image_{i+1}.png", "wb") as f:
             f.write(image_bytes)
-
-    # Save texts
-    with open(f"{memory_dir}/texts/{new_memory.owner}.json", "w") as f:
-        memory = {str(uuid.uuid4()): new_memory.text}
-        f.write(json.dumps(memory))
 
     # Return the created memory
     return get_memory_data(new_memory_id)

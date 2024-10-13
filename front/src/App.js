@@ -25,6 +25,7 @@ function App() {
           <Route path="/quiz-home" element={<QuizPage />} />
           <Route path="/quiz" element={<QuizSlideshow />} />
           <Route path="/graph" element={<SemanticGraphPage />} />
+          <Route path="/quiz-recap" element={<QuizRecapSlideshow />} />
         </Routes>
       </div>
     </Router>

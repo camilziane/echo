@@ -4,14 +4,14 @@ import {
   HomeIcon, 
   QuestionMarkCircleIcon, 
   PlusIcon,
+  BookOpenIcon,
   SparklesIcon,
   ChartBarIcon
 } from '@heroicons/react/outline';
 import { 
   HomeIcon as HomeIconSolid, 
   QuestionMarkCircleIcon as QuestionMarkCircleIconSolid, 
-  PlusIcon as PlusIconSolid,
-  ChartBarIcon as ChartBarIconSolid
+  PlusIcon as PlusIconSolid
 } from '@heroicons/react/solid';
 
 const Sidebar = () => {
@@ -28,18 +28,22 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="fixed left-0 top-0 h-full w-48 bg-white shadow-lg z-10">
-      <div className="flex flex-col py-8 space-y-1">
+<div className="fixed left-0 top-0 h-full w-48 bg-gradient-to-b from-blue-50 to-indigo-200 to-white shadow-lg z-10 backdrop-blur-md">
+<div className="flex flex-col py-8 space-y-1">
         <div className="px-6 mb-6">
-          <div className="text-blue-800 font-bold text-3xl">Echo</div>
-        </div>
+        <div className="text-blue-800 font-bold text-4xl font-poppins">
+        <img src="echo_logo_f.svg" alt="Echo Logo"/>
+
+</div>
+
+          </div>
         <Link
           ref={el => linksRef.current[0] = el}
           to="/memories"
           className={`flex items-center space-x-4 px-6 py-3 ${isActive('/memories') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
-          {isActive('/memories') ? <HomeIconSolid className="h-6 w-6" /> : <HomeIcon className="h-6 w-6" />}
-          <span className="text-sm">Home</span>
+          {isActive('/memories') ? <BookOpenIconSolid className="h-6 w-6" /> : <BookOpenIcon className="h-6 w-6" />}
+          <span className="text-sm">Library</span>
         </Link>
         <Link
           ref={el => linksRef.current[1] = el}
@@ -63,14 +67,14 @@ const Sidebar = () => {
           className={`flex items-center space-x-4 px-6 py-3 ${isActive('/create-memory') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
           {isActive('/create-memory') ? <PlusIconSolid className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
-          <span className="text-sm">Create</span>
+          <span className="text-sm">New</span>
         </Link>
         <Link
           ref={el => linksRef.current[4] = el}
-          to="/semantic-graph"
-          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/semantic-graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
+          to="/graph"
+          className={`flex items-center space-x-4 px-6 py-3 ${isActive('/graph') ? 'text-blue-800 font-bold' : 'text-blue-600 hover:text-blue-800'}`}
         >
-          {isActive('/semantic-graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
+          {isActive('/graph') ? <ChartBarIconSolid className="h-6 w-6" /> : <ChartBarIcon className="h-6 w-6" />}
           <span className="text-sm">Semantic Graph</span>
         </Link>
       </div>
