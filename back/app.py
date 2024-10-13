@@ -18,6 +18,7 @@ from rag import add_document
 from typing import Optional
 import uuid
 from quiz import *
+from rag import generate_title
 import uuid
 
 # Add this at the beginning of your app.py file
@@ -58,10 +59,8 @@ class Text(BaseModel):
 
 class NewMemory(BaseModel):
     owner: int
-    name: str
     location: str
-    date: str
-    images: List[str]
+    images: List[str] = []
     text: str
 
 
@@ -181,12 +180,13 @@ def create_memory(new_memory: NewMemory):
     os.makedirs(f"{memory_dir}/images", exist_ok=True)
     os.makedirs(f"{memory_dir}/texts", exist_ok=True)
 
+    name = generate_title(new_memory.text)
     # Save metadata
     metadata = {
         "owner": new_memory.owner,
-        "name": new_memory.name,
+        "name": name,
         "location": new_memory.location,
-        "date": new_memory.date,
+        "date": datetime.now().strftime("%Y-%m-%d"),
     }
     with open(f"{memory_dir}/metadata.json", "w") as f:
         json.dump(metadata, f)

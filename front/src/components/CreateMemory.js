@@ -128,18 +128,20 @@ const CreateMemory = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('owner', selectedProfileId);
-        formData.append('location', location);
-        formData.append('text', text);
-        images.forEach((image, index) => {
-            formData.append(`image${index}`, image);
-        });
+        // Create a data object instead of FormData
+        const data = {
+            owner: selectedProfileId,
+            location: location,
+            text: text
+        };
 
         try {
             const response = await fetch('http://localhost:8000/memories', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
 
             if (response.ok) {

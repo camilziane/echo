@@ -20,11 +20,14 @@ from langchain_core.runnables import RunnableBranch
 
 from langchain_core.runnables import RunnablePassthrough
 from langchain.schema import AIMessage
-
+from langchain.prompts import PromptTemplate
+from langchain.chains.llm import LLMChain
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableLambda
 from fastapi import APIRouter
+from langchain.output_parsers import PydanticOutputParser
 import json
+
 
 router = APIRouter()
 
@@ -153,6 +156,44 @@ conversational_retrieval_chain = RunnablePassthrough.assign(
 ).assign(answer=document_chain) | RunnableLambda(
     lambda outputs: AIMessage(content=outputs["answer"])
 )
+
+
+class Title(BaseModel):
+    title: str = Field(description="The generated title for the text")
+
+
+
+def generate_title(text: str) -> str:
+    """
+    Generate a title for the given text using a language model.
+
+    Args:
+    text (str): The input text to generate a title for.
+
+    Returns:
+    str: The generated title.
+    """
+    # Create a prompt template
+    parser = PydanticOutputParser(pydantic_object=Title)
+
+    messages = [
+        HumanMessage(content=f"Generate a concise and engaging title for the following text:\n\n{text}\n\n{parser.get_format_instructions()}")
+    ]
+
+    response = llm.predict_messages(messages)
+    parser = PydanticOutputParser(pydantic_object=Title)
+    prompt_template = PromptTemplate(
+        input_variables=["text"],
+        template="Generate a concise and engaging title for the following text:\n\n{text}\n\nTitle:",
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    try:
+        title = parser.parse(response.content)
+        print(title)
+        return title.title
+    except Exception as e:
+        print(f"Error parsing response: {e}")
+        return ""
 
 
 # Add these routes to the router
