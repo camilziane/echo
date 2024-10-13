@@ -1,5 +1,11 @@
 # Echo: A Shared Memory Platform for Alzheimer's Support
 
+![Quiz Interface](quiz.png)
+![Chat Interface](chat.png)
+![Face Quiz Interface](facequiz.png)
+![Library Interface](lib.png)
+
+
 ## Inspiration
 
 Most of our team members have known or had family members affected by Alzheimer's, which deeply inspired us to develop this project. Our goal was to create something that could offer real, tangible support to families in a similar situation. From a product standpoint, we drew inspiration from platforms like Netflix and Instagram, aiming to create a smooth, intuitive user interface with simple, seamless navigation to encourage frequent use. We also looked to apps like Woocalp for their structured quiz formats, integrating them to help Alzheimer's patients with memory recall.
@@ -27,4 +33,3 @@ Throughout the development of Echo, we learned a great deal about balancing tech
 ## What's next for Echo
 
 There is a lot of room for improvement in Echo, and we have many ideas for expanding its features. One of our next goals is to implement weekly reports summarizing the patient's treatment progress. We also conducted a survey with people who have family members affected by Alzheimer's, which gave us plenty of feature requests, including task tracking, medication and meeting reminders (agenda), music memory recalls, a communication system, and the ability to store and use family members' voices within the platform.
-
